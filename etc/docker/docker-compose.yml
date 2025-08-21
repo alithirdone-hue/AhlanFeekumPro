@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  ahlanfeekumpro-blazor:
+    image: mycompanyname/ahlanfeekumpro-blazor:latest
+    container_name: ahlanfeekumpro-blazor
+    build:
+      context: ../../
+      dockerfile: src/AhlanFeekumPro.Blazor/Dockerfile.local
+    environment:
+      - ASPNETCORE_URLS=https://+:443;http://+:80;
+      - Kestrel__Certificates__Default__Path=/root/certificate/localhost.pfx
+      - Kestrel__Certificates__Default__Password=c9add8fa-dfa7-4ede-a0f1-149c34370b06
+      - App__SelfUrl=https://localhost:44314
+      - AuthServer__RequireHttpsMetadata=false      
+      - AuthServer__Authority=http://ahlanfeekumpro-blazor
+      - ConnectionStrings__Default=Data Source=sql-server;Initial Catalog=AhlanFeekumPro;User Id=sa;Password=myPassw0rd;MultipleActiveResultSets=true;TrustServerCertificate=True;
+    ports:
+      - "44314:443"
+    restart: on-failure
+    volumes:
+      - ./certs:/root/certificate
+    networks:
+      - abp-network
+
+  db-migrator:
+    image: mycompanyname/ahlanfeekumpro-db-migrator:latest
+    container_name: db-migrator
+    build:
+      context: ../../
+      dockerfile: src/AhlanFeekumPro.DbMigrator/Dockerfile.local
+    environment:
+      - OpenIddict__Applications__AhlanFeekumPro_BlazorServerTiered__RootUrl=https://localhost:44314
+      - OpenIddict__Applications__AhlanFeekumPro_Swagger__RootUrl=https://localhost:44354
+      - ConnectionStrings__Default=Data Source=sql-server;Initial Catalog=AhlanFeekumPro;User Id=sa;Password=myPassw0rd;MultipleActiveResultSets=true;TrustServerCertificate=True;
+      - Redis__Configuration=redis
+    restart: on-failure
+    depends_on:
+      sql-server:
+        condition: service_healthy
+    networks:
+      - abp-network
+  
+  sql-server:
+    container_name: sql-server
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    ports:
+      - "1434:1433"
+    environment:
+      SA_PASSWORD: "myPassw0rd"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - sqldata:/var/opt/mssql
+    networks:
+      - abp-network
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S sql-server -U sa -P "myPassw0rd" -Q "SELECT 1" -b -o /dev/null
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+volumes:
+  sqldata:
+    name: ahlanfeekumpro_sqldata
+networks:
+  abp-network:
+    name: ahlanfeekumpro-network
+    driver: bridge
