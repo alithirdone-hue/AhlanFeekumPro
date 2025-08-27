@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks;
 using AhlanFeekumPro.Localization;
 using AhlanFeekumPro.Permissions;
 using Volo.Abp.AuditLogging.Blazor.Menus;
@@ -89,13 +91,12 @@ public class AhlanFeekumProMenuContributor : IMenuContributor
 
         //Administration->Identity
         administration.SetSubItemOrder(IdentityProMenus.GroupName, 1);
-        
+
         //Administration->Saas
         administration.SetSubItemOrder(SaasHostMenus.GroupName, 2);
 
         //Administration->OpenIddict
         administration.SetSubItemOrder(OpenIddictProMenus.GroupName, 3);
-        
 
         //Administration->Language Management
         administration.SetSubItemOrder(LanguageManagementMenus.GroupName, 5);
@@ -109,6 +110,86 @@ public class AhlanFeekumProMenuContributor : IMenuContributor
         //Administration->Settings
         administration.SetSubItemOrder(SettingManagementMenus.GroupName, 8);
 
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.UserProfiles,
+                l["Menu:UserProfiles"],
+                url: "/user-profiles",
+icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.UserProfiles.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.PropertyFeatures,
+                l["Menu:PropertyFeatures"],
+                url: "/property-features",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.PropertyFeatures.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.PropertyTypes,
+                l["Menu:PropertyTypes"],
+                url: "/property-types",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.PropertyTypes.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.SiteProperties,
+                l["Menu:SiteProperties"],
+                url: "/site-properties",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.SiteProperties.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.FavoriteProperties,
+                l["Menu:FavoriteProperties"],
+                url: "/favorite-properties",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.FavoriteProperties.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.PersonEvaluations,
+                l["Menu:PersonEvaluations"],
+                url: "/person-evaluations",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.PersonEvaluations.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.PropertyEvaluations,
+                l["Menu:PropertyEvaluations"],
+                url: "/property-evaluations",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.PropertyEvaluations.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.PropertyMedias,
+                l["Menu:PropertyMedias"],
+                url: "/property-medias",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.PropertyMedias.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.VerificationCodes,
+                l["Menu:VerificationCodes"],
+                url: "/verification-codes",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.VerificationCodes.Default)
+        );
         return Task.CompletedTask;
     }
 }

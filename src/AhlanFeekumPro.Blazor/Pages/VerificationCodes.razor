@@ -1,0 +1,385 @@
+
+
+@page "/verification-codes"
+
+@attribute [Authorize(AhlanFeekumProPermissions.VerificationCodes.Default)]
+@using AhlanFeekumPro.VerificationCodes
+@using AhlanFeekumPro.Localization
+@using AhlanFeekumPro.Shared
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Web
+@using Blazorise
+@using Blazorise.Components
+@using Blazorise.DataGrid
+@using Volo.Abp.BlazoriseUI
+@using Volo.Abp.BlazoriseUI.Components
+@using Volo.Abp.ObjectMapping
+@using Volo.Abp.AspNetCore.Components.Messages
+@using Volo.Abp.AspNetCore.Components.Web.Theming.Layout
+
+@using AhlanFeekumPro.Permissions
+@using Volo.Abp.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components
+@using Volo.Abp.Http.Client
+@inherits AhlanFeekumProComponentBase
+@inject IVerificationCodesAppService VerificationCodesAppService
+
+@inject IUiMessageService UiMessageService
+@inject AbpBlazorMessageLocalizerHelper<AhlanFeekumProResource> LH
+@inject IRemoteServiceConfigurationProvider RemoteServiceConfigurationProvider
+@inject NavigationManager NavigationManager
+
+@* ************************* PAGE HEADER ************************* *@
+<PageHeader Title="@L["VerificationCodes"]" BreadcrumbItems="BreadcrumbItems" Toolbar="Toolbar">
+
+</PageHeader>
+
+@* ************************* SEARCH ************************* *@
+<Card>
+    <CardBody>
+@*//<suite-custom-code-block-1>*@
+@*//</suite-custom-code-block-1>*@
+        <Row>
+            <div class="col-md-8 col-lg-10">
+                <div class="mb-3">
+                    <Form id="VerificationCodeSearchForm">
+                        <Addons>
+                            <Addon AddonType="AddonType.Body">
+                                <TextEdit @bind-Text="@Filter.FilterText"
+                                        Autofocus="true"
+                                        Placeholder="@L["Search"]">
+                                </TextEdit>
+                            </Addon>
+                            <Addon AddonType="AddonType.End">
+                                <SubmitButton Form="VerificationCodeSearchForm" Clicked="GetVerificationCodesAsync">
+                                    <Icon Name="IconName.Search" Class="me-1"></Icon>@L["Search"]
+                                </SubmitButton>
+                            </Addon>
+                        </Addons>
+                    </Form>
+                </div>
+            </div>
+                
+                   <div class="col-md-4 col-lg-2">
+            <div class="mb-3">
+               <Button Color="Color.Primary" Outline Style="width:100%" id="AdvancedFilterSectionToggler"
+                         Clicked="@(() => ShowAdvancedFilters = !ShowAdvancedFilters)">@L["Filters"]
+                         <i aria-hidden="true" class="fa ms-1 @(!ShowAdvancedFilters ? "fa-angle-down" : "fa-angle-up")"></i>
+               </Button>
+            </div>
+       </div>
+        
+        <div style="display: @(!ShowAdvancedFilters ? "none" : "block")"  class="mt-3">
+            <Row>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["PhoneOrEmail"]</FieldLabel>
+                        <TextEdit Text="@Filter.PhoneOrEmail" TextChanged="@OnPhoneOrEmailChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["MinSecurityCode"]</FieldLabel>
+                        <NumericEdit TValue="int?" 
+             Value="@Filter.SecurityCodeMin"
+             ValueChanged="@OnSecurityCodeMinChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["MaxSecurityCode"]</FieldLabel>
+                        <NumericEdit TValue="int?" 
+             Value="@Filter.SecurityCodeMax"
+             ValueChanged="@OnSecurityCodeMaxChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["IsExpired"]</FieldLabel>
+                        <Select TValue="bool?"
+		SelectedValue="@Filter.IsExpired"
+		SelectedValueChanged="@OnIsExpiredChangedAsync">
+
+<SelectItem></SelectItem>
+<SelectItem Value="true">@L["Yes"]</SelectItem>
+<SelectItem Value="false">@L["No"]</SelectItem>
+
+</Select>                       
+                    </Field>
+                </Column>
+            </Row>
+@*//<suite-custom-code-block-2>*@
+@*//</suite-custom-code-block-2>*@
+        </div>
+
+        </Row>
+
+@*//<suite-custom-code-block-3>*@
+@*//</suite-custom-code-block-3>*@
+    </CardBody>
+</Card>
+
+@* ************************* DATA GRID ************************* *@
+<Card>
+    <CardBody>        
+        @if (SelectedVerificationCodes.Any())
+        {
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                @if (AllVerificationCodesSelected)
+                {
+                    <p class="lead mb-0">
+                        @L["AllItemsAreSelected", TotalCount]
+                    </p>
+                }
+                else
+                {
+                    <p class="lead mb-0">
+                        @if (SelectedVerificationCodes.Count > 1)
+                        {
+                            @L["NumberOfItemsOnThisPageAreSelected", SelectedVerificationCodes.Count]
+                        }
+                        else
+                        {
+                            @L["OneItemOnThisPageIsSelected"]
+                        }
+                    </p>
+                }
+                    
+                <div>
+                    @if ((SelectedVerificationCodes.Count == PageSize || SelectedVerificationCodes.Count == VerificationCodeList.Count) && TotalCount > SelectedVerificationCodes.Count)
+                    {
+                        if (!AllVerificationCodesSelected)
+                        {
+                            <Button Clicked="SelectAllItems" Class="mx-1 btn-outline-secondary">@L["SelectAllItems", TotalCount]</Button>
+                        }
+                        else
+                        {
+                            <Button Clicked="ClearSelection" Class="mx-1 btn-outline-secondary">@L["ClearSelection"]</Button>
+                        }
+                    }
+                    
+                    <Button Color="Color.Danger" Class="mx-1" Size="Size.Medium" Clicked="DeleteSelectedVerificationCodesAsync">
+                        <Icon Name="@IconName.Delete" /> @L["Delete"]
+                    </Button>
+                </div>
+            </div>
+            
+            <hr class="my-1 mx-0"/>
+        }
+        <DataGrid TItem="VerificationCodeDto"
+                  Data="VerificationCodeList"
+                  
+                  SelectionMode="DataGridSelectionMode.Multiple"
+                  SelectedRows="SelectedVerificationCodes"
+                  RowSelectable="@((args) => CanDeleteVerificationCode)"
+                  SelectedRowsChanged="SelectedVerificationCodeRowsChanged"
+                  
+                  
+                  
+                  ReadData="OnDataGridReadAsync"
+                  TotalItems="TotalCount"
+                  ShowPager="true"
+                  Responsive="true"
+                  PageSize="PageSize"
+                  Class="datagrid-detail">
+            <LoadingTemplate>
+                <Row Class="w-100 align-items-center" Style="height: 150px;">
+                    <Column>
+                       <RadarSpinner />
+                    </Column>
+                </Row>
+            </LoadingTemplate>
+            <EmptyTemplate>
+                <Row Class="w-100 align-items-center" Style="height: 150px;">
+                    <Column>
+                        <Heading Size="HeadingSize.Is4" TextAlignment="TextAlignment.Center">@L["NoDataAvailable"]</Heading>
+                    </Column>
+                </Row>
+            </EmptyTemplate>   
+            <DataGridColumns>
+                
+                @if (CanDeleteVerificationCode && VerificationCodeList.Any())
+                {
+                    <DataGridMultiSelectColumn TItem="VerificationCodeDto" DisplayOrder="-1" Width="30px"></DataGridMultiSelectColumn>
+                }
+                
+                <DataGridEntityActionsColumn TItem="VerificationCodeDto" @ref="@EntityActionsColumn">
+                    <DisplayTemplate>
+                        <EntityActions TItem="VerificationCodeDto" EntityActionsColumn="@EntityActionsColumn">
+                            <EntityAction TItem="VerificationCodeDto"
+                                          Visible="@CanEditVerificationCode"
+                                          Clicked="async () => await OpenEditVerificationCodeModalAsync(context)"
+                                          Text="@L["Edit"]"></EntityAction>
+                            <EntityAction TItem="VerificationCodeDto"
+                                          Visible="@CanDeleteVerificationCode"
+                                          Clicked="() => DeleteVerificationCodeAsync(context)"
+                                          ConfirmationMessage="@(()=> L["DeleteConfirmationMessage"])"
+                                          Text="@L["Delete"]"></EntityAction>
+@*//<suite-custom-code-block-4>*@
+@*//</suite-custom-code-block-4>*@
+                        </EntityActions>
+                    </DisplayTemplate>
+                </DataGridEntityActionsColumn>
+               
+              <DataGridColumn TItem="VerificationCodeDto"
+                      Field="PhoneOrEmail"
+                      Caption="@L["PhoneOrEmail"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="VerificationCodeDto"
+                      Field="SecurityCode"
+                      Caption="@L["SecurityCode"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="VerificationCodeDto"
+                      Field="IsExpired"
+                      Caption="@L["IsExpired"]">
+                    <DisplayTemplate>
+                        @if (context.IsExpired)
+                        {
+                            <Icon TextColor="TextColor.Success" Name="@IconName.Check" />
+                        }
+                        else
+                        {
+                            <Icon TextColor="TextColor.Danger" Name="@IconName.Times" />
+                        }
+                    </DisplayTemplate>
+              </DataGridColumn>
+
+
+            </DataGridColumns>
+            
+            
+        </DataGrid>
+    </CardBody>
+</Card>
+
+@* ************************* CREATE MODAL ************************* *@
+<Modal @ref="CreateVerificationCodeModal" Closing="@CreateVerificationCodeModal.CancelClosingModalWhenFocusLost">
+    <ModalContent Centered="true">
+@*//<suite-custom-code-block-5>*@
+@*//</suite-custom-code-block-5>*@
+        <Form id="CreateVerificationCodeForm">
+            <ModalHeader>
+                <ModalTitle>@L["NewVerificationCode"]</ModalTitle>
+                <CloseButton Clicked="CloseCreateVerificationCodeModalAsync" />
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="@NewVerificationCodeValidations"
+                            Mode="ValidationMode.Auto"
+                            Model="@NewVerificationCode"
+                            ValidateOnLoad="false">
+                    
+                    
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["PhoneOrEmail"] *</FieldLabel>
+                            <TextEdit @bind-Text="@NewVerificationCode.PhoneOrEmail"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["SecurityCode"]</FieldLabel>
+                            <NumericPicker TValue="int" @bind-Value="@NewVerificationCode.SecurityCode"  Decimals="0" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                             </NumericPicker>
+                        </Field>
+                     </Validation>
+
+
+                    <Field>
+                        <Check TValue="bool" @bind-Checked="@NewVerificationCode.IsExpired" >@L["IsExpired"]</Check>
+                    </Field>
+
+                    
+                    
+                </Validations>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary"
+                        Clicked="CloseCreateVerificationCodeModalAsync">
+                    @L["Cancel"]
+                </Button>
+                <SubmitButton Form="CreateVerificationCodeForm" Clicked="CreateVerificationCodeAsync"/>
+@*//<suite-custom-code-block-6>*@
+@*//</suite-custom-code-block-6>*@
+            </ModalFooter>
+        </Form>
+@*//<suite-custom-code-block-7>*@
+@*//</suite-custom-code-block-7>*@
+    </ModalContent>
+</Modal>
+
+@* ************************* EDIT MODAL ************************* *@
+<Modal @ref="EditVerificationCodeModal" Closing="@EditVerificationCodeModal.CancelClosingModalWhenFocusLost">
+    <ModalContent Centered="true">
+@*//<suite-custom-code-block-8>*@
+@*//</suite-custom-code-block-8>*@
+        <Form id="EditVerificationCodeForm">
+            <ModalHeader>
+                <ModalTitle>@L["Update"]</ModalTitle>
+                <CloseButton Clicked="CloseEditVerificationCodeModalAsync" />
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="@EditingVerificationCodeValidations"
+                            Mode="ValidationMode.Auto"
+                            Model="@EditingVerificationCode"
+                            ValidateOnLoad="false">
+                    
+                    
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["PhoneOrEmail"] *</FieldLabel>
+                            <TextEdit @bind-Text="@EditingVerificationCode.PhoneOrEmail"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["SecurityCode"]</FieldLabel>
+                            <NumericPicker TValue="int" @bind-Value="@EditingVerificationCode.SecurityCode"  Decimals="0" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                             </NumericPicker>
+                        </Field>
+                     </Validation>
+
+
+                    <Field>
+                        <Check TValue="bool" @bind-Checked="@EditingVerificationCode.IsExpired" >@L["IsExpired"]</Check>
+                    </Field>
+
+                    
+                    
+                </Validations>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary"
+                        Clicked="CloseEditVerificationCodeModalAsync">
+                    @L["Cancel"]
+                </Button>
+                <SubmitButton Form="EditVerificationCodeForm" Clicked="UpdateVerificationCodeAsync" />
+@*//<suite-custom-code-block-9>*@
+@*//</suite-custom-code-block-9>*@
+            </ModalFooter>
+        </Form>
+@*//<suite-custom-code-block-10>*@
+@*//</suite-custom-code-block-10>*@
+    </ModalContent>
+</Modal>
+

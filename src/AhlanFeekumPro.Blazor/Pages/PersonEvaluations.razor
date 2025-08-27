@@ -1,0 +1,447 @@
+
+
+@page "/person-evaluations"
+
+@attribute [Authorize(AhlanFeekumProPermissions.PersonEvaluations.Default)]
+@using AhlanFeekumPro.PersonEvaluations
+@using AhlanFeekumPro.Localization
+@using AhlanFeekumPro.Shared
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Web
+@using Blazorise
+@using Blazorise.Components
+@using Blazorise.DataGrid
+@using Volo.Abp.BlazoriseUI
+@using Volo.Abp.BlazoriseUI.Components
+@using Volo.Abp.ObjectMapping
+@using Volo.Abp.AspNetCore.Components.Messages
+@using Volo.Abp.AspNetCore.Components.Web.Theming.Layout
+
+@using AhlanFeekumPro.Permissions
+@using Volo.Abp.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components
+@using Volo.Abp.Http.Client
+@inherits AhlanFeekumProComponentBase
+@inject IPersonEvaluationsAppService PersonEvaluationsAppService
+
+@inject IUiMessageService UiMessageService
+@inject AbpBlazorMessageLocalizerHelper<AhlanFeekumProResource> LH
+@inject IRemoteServiceConfigurationProvider RemoteServiceConfigurationProvider
+@inject NavigationManager NavigationManager
+
+@* ************************* PAGE HEADER ************************* *@
+<PageHeader Title="@L["PersonEvaluations"]" BreadcrumbItems="BreadcrumbItems" Toolbar="Toolbar">
+
+</PageHeader>
+
+@* ************************* SEARCH ************************* *@
+<Card>
+    <CardBody>
+@*//<suite-custom-code-block-1>*@
+@*//</suite-custom-code-block-1>*@
+        <Row>
+            <div class="col-md-8 col-lg-10">
+                <div class="mb-3">
+                    <Form id="PersonEvaluationSearchForm">
+                        <Addons>
+                            <Addon AddonType="AddonType.Body">
+                                <TextEdit @bind-Text="@Filter.FilterText"
+                                        Autofocus="true"
+                                        Placeholder="@L["Search"]">
+                                </TextEdit>
+                            </Addon>
+                            <Addon AddonType="AddonType.End">
+                                <SubmitButton Form="PersonEvaluationSearchForm" Clicked="GetPersonEvaluationsAsync">
+                                    <Icon Name="IconName.Search" Class="me-1"></Icon>@L["Search"]
+                                </SubmitButton>
+                            </Addon>
+                        </Addons>
+                    </Form>
+                </div>
+            </div>
+                
+                   <div class="col-md-4 col-lg-2">
+            <div class="mb-3">
+               <Button Color="Color.Primary" Outline Style="width:100%" id="AdvancedFilterSectionToggler"
+                         Clicked="@(() => ShowAdvancedFilters = !ShowAdvancedFilters)">@L["Filters"]
+                         <i aria-hidden="true" class="fa ms-1 @(!ShowAdvancedFilters ? "fa-angle-down" : "fa-angle-up")"></i>
+               </Button>
+            </div>
+       </div>
+        
+        <div style="display: @(!ShowAdvancedFilters ? "none" : "block")"  class="mt-3">
+            <Row>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["MinRate"]</FieldLabel>
+                        <NumericEdit TValue="int?" 
+             Value="@Filter.RateMin"
+             ValueChanged="@OnRateMinChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["MaxRate"]</FieldLabel>
+                        <NumericEdit TValue="int?" 
+             Value="@Filter.RateMax"
+             ValueChanged="@OnRateMaxChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["Comment"]</FieldLabel>
+                        <TextEdit Text="@Filter.Comment" TextChanged="@OnCommentChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["UserProfile"]</FieldLabel>
+                        <Select TValue="Guid?"
+		SelectedValue="@Filter.EvaluatorId"
+		SelectedValueChanged="@OnEvaluatorIdChangedAsync">
+
+<SelectItem></SelectItem>
+
+@foreach(var item in UserProfilesCollection)
+{
+	<SelectItem TValue="Guid" Value="@item.Id">
+		@item.DisplayName
+	</SelectItem>
+}
+
+</Select>                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["UserProfile"]</FieldLabel>
+                        <Select TValue="Guid?"
+		SelectedValue="@Filter.EvaluatedPersonId"
+		SelectedValueChanged="@OnEvaluatedPersonIdChangedAsync">
+
+<SelectItem></SelectItem>
+
+@foreach(var item in UserProfilesCollection)
+{
+	<SelectItem TValue="Guid" Value="@item.Id">
+		@item.DisplayName
+	</SelectItem>
+}
+
+</Select>                       
+                    </Field>
+                </Column>
+            </Row>
+@*//<suite-custom-code-block-2>*@
+@*//</suite-custom-code-block-2>*@
+        </div>
+
+        </Row>
+
+@*//<suite-custom-code-block-3>*@
+@*//</suite-custom-code-block-3>*@
+    </CardBody>
+</Card>
+
+@* ************************* DATA GRID ************************* *@
+<Card>
+    <CardBody>        
+        @if (SelectedPersonEvaluations.Any())
+        {
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                @if (AllPersonEvaluationsSelected)
+                {
+                    <p class="lead mb-0">
+                        @L["AllItemsAreSelected", TotalCount]
+                    </p>
+                }
+                else
+                {
+                    <p class="lead mb-0">
+                        @if (SelectedPersonEvaluations.Count > 1)
+                        {
+                            @L["NumberOfItemsOnThisPageAreSelected", SelectedPersonEvaluations.Count]
+                        }
+                        else
+                        {
+                            @L["OneItemOnThisPageIsSelected"]
+                        }
+                    </p>
+                }
+                    
+                <div>
+                    @if ((SelectedPersonEvaluations.Count == PageSize || SelectedPersonEvaluations.Count == PersonEvaluationList.Count) && TotalCount > SelectedPersonEvaluations.Count)
+                    {
+                        if (!AllPersonEvaluationsSelected)
+                        {
+                            <Button Clicked="SelectAllItems" Class="mx-1 btn-outline-secondary">@L["SelectAllItems", TotalCount]</Button>
+                        }
+                        else
+                        {
+                            <Button Clicked="ClearSelection" Class="mx-1 btn-outline-secondary">@L["ClearSelection"]</Button>
+                        }
+                    }
+                    
+                    <Button Color="Color.Danger" Class="mx-1" Size="Size.Medium" Clicked="DeleteSelectedPersonEvaluationsAsync">
+                        <Icon Name="@IconName.Delete" /> @L["Delete"]
+                    </Button>
+                </div>
+            </div>
+            
+            <hr class="my-1 mx-0"/>
+        }
+        <DataGrid TItem="PersonEvaluationWithNavigationPropertiesDto"
+                  Data="PersonEvaluationList"
+                  
+                  SelectionMode="DataGridSelectionMode.Multiple"
+                  SelectedRows="SelectedPersonEvaluations"
+                  RowSelectable="@((args) => CanDeletePersonEvaluation)"
+                  SelectedRowsChanged="SelectedPersonEvaluationRowsChanged"
+                  
+                  
+                  
+                  ReadData="OnDataGridReadAsync"
+                  TotalItems="TotalCount"
+                  ShowPager="true"
+                  Responsive="true"
+                  PageSize="PageSize"
+                  Class="datagrid-detail">
+            <LoadingTemplate>
+                <Row Class="w-100 align-items-center" Style="height: 150px;">
+                    <Column>
+                       <RadarSpinner />
+                    </Column>
+                </Row>
+            </LoadingTemplate>
+            <EmptyTemplate>
+                <Row Class="w-100 align-items-center" Style="height: 150px;">
+                    <Column>
+                        <Heading Size="HeadingSize.Is4" TextAlignment="TextAlignment.Center">@L["NoDataAvailable"]</Heading>
+                    </Column>
+                </Row>
+            </EmptyTemplate>   
+            <DataGridColumns>
+                
+                @if (CanDeletePersonEvaluation && PersonEvaluationList.Any())
+                {
+                    <DataGridMultiSelectColumn TItem="PersonEvaluationWithNavigationPropertiesDto" DisplayOrder="-1" Width="30px"></DataGridMultiSelectColumn>
+                }
+                
+                <DataGridEntityActionsColumn TItem="PersonEvaluationWithNavigationPropertiesDto" @ref="@EntityActionsColumn">
+                    <DisplayTemplate>
+                        <EntityActions TItem="PersonEvaluationWithNavigationPropertiesDto" EntityActionsColumn="@EntityActionsColumn">
+                            <EntityAction TItem="PersonEvaluationWithNavigationPropertiesDto"
+                                          Visible="@CanEditPersonEvaluation"
+                                          Clicked="async () => await OpenEditPersonEvaluationModalAsync(context)"
+                                          Text="@L["Edit"]"></EntityAction>
+                            <EntityAction TItem="PersonEvaluationWithNavigationPropertiesDto"
+                                          Visible="@CanDeletePersonEvaluation"
+                                          Clicked="() => DeletePersonEvaluationAsync(context)"
+                                          ConfirmationMessage="@(()=> L["DeleteConfirmationMessage"])"
+                                          Text="@L["Delete"]"></EntityAction>
+@*//<suite-custom-code-block-4>*@
+@*//</suite-custom-code-block-4>*@
+                        </EntityActions>
+                    </DisplayTemplate>
+                </DataGridEntityActionsColumn>
+               
+              <DataGridColumn TItem="PersonEvaluationWithNavigationPropertiesDto"
+                      Field="PersonEvaluation.Rate"
+                      Caption="@L["Rate"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="PersonEvaluationWithNavigationPropertiesDto"
+                      Field="PersonEvaluation.Comment"
+                      Caption="@L["Comment"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="PersonEvaluationWithNavigationPropertiesDto"
+                      Field="Evaluator.Name"
+                      Caption="@L["Evaluator"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="PersonEvaluationWithNavigationPropertiesDto"
+                      Field="EvaluatedPerson.Name"
+                      Caption="@L["EvaluatedPerson"]">
+              </DataGridColumn>
+
+            </DataGridColumns>
+            
+            
+        </DataGrid>
+    </CardBody>
+</Card>
+
+@* ************************* CREATE MODAL ************************* *@
+<Modal @ref="CreatePersonEvaluationModal" Closing="@CreatePersonEvaluationModal.CancelClosingModalWhenFocusLost">
+    <ModalContent Centered="true">
+@*//<suite-custom-code-block-5>*@
+@*//</suite-custom-code-block-5>*@
+        <Form id="CreatePersonEvaluationForm">
+            <ModalHeader>
+                <ModalTitle>@L["NewPersonEvaluation"]</ModalTitle>
+                <CloseButton Clicked="CloseCreatePersonEvaluationModalAsync" />
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="@NewPersonEvaluationValidations"
+                            Mode="ValidationMode.Auto"
+                            Model="@NewPersonEvaluation"
+                            ValidateOnLoad="false">
+                    
+                    
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Rate"] *</FieldLabel>
+                            <NumericPicker TValue="int" @bind-Value="@NewPersonEvaluation.Rate"  Min="PersonEvaluationConsts.RateMinLength" Max="PersonEvaluationConsts.RateMaxLength" Decimals="0" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                             </NumericPicker>
+                        </Field>
+                     </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Comment"]</FieldLabel>
+                            <TextEdit @bind-Text="@NewPersonEvaluation.Comment"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Field>
+                        <FieldLabel>@L["UserProfile"]</FieldLabel>
+                        <Select TValue="Guid" @bind-SelectedValue="@NewPersonEvaluation.EvaluatorId">
+                            @foreach (var userProfile in UserProfilesCollection)
+                            {
+                                <SelectItem TValue="Guid" Value="@(userProfile.Id)">
+                                    @(userProfile.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    <Field>
+                        <FieldLabel>@L["UserProfile"]</FieldLabel>
+                        <Select TValue="Guid" @bind-SelectedValue="@NewPersonEvaluation.EvaluatedPersonId">
+                            @foreach (var userProfile in UserProfilesCollection)
+                            {
+                                <SelectItem TValue="Guid" Value="@(userProfile.Id)">
+                                    @(userProfile.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    
+                    
+                </Validations>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary"
+                        Clicked="CloseCreatePersonEvaluationModalAsync">
+                    @L["Cancel"]
+                </Button>
+                <SubmitButton Form="CreatePersonEvaluationForm" Clicked="CreatePersonEvaluationAsync"/>
+@*//<suite-custom-code-block-6>*@
+@*//</suite-custom-code-block-6>*@
+            </ModalFooter>
+        </Form>
+@*//<suite-custom-code-block-7>*@
+@*//</suite-custom-code-block-7>*@
+    </ModalContent>
+</Modal>
+
+@* ************************* EDIT MODAL ************************* *@
+<Modal @ref="EditPersonEvaluationModal" Closing="@EditPersonEvaluationModal.CancelClosingModalWhenFocusLost">
+    <ModalContent Centered="true">
+@*//<suite-custom-code-block-8>*@
+@*//</suite-custom-code-block-8>*@
+        <Form id="EditPersonEvaluationForm">
+            <ModalHeader>
+                <ModalTitle>@L["Update"]</ModalTitle>
+                <CloseButton Clicked="CloseEditPersonEvaluationModalAsync" />
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="@EditingPersonEvaluationValidations"
+                            Mode="ValidationMode.Auto"
+                            Model="@EditingPersonEvaluation"
+                            ValidateOnLoad="false">
+                    
+                    
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Rate"] *</FieldLabel>
+                            <NumericPicker TValue="int" @bind-Value="@EditingPersonEvaluation.Rate"  Min="PersonEvaluationConsts.RateMinLength" Max="PersonEvaluationConsts.RateMaxLength" Decimals="0" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                             </NumericPicker>
+                        </Field>
+                     </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Comment"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingPersonEvaluation.Comment"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Field>
+                        <FieldLabel>@L["UserProfile"]</FieldLabel>
+                        <Select TValue="Guid" @bind-SelectedValue="@EditingPersonEvaluation.EvaluatorId">
+                            @foreach (var userProfile in UserProfilesCollection)
+                            {
+                                <SelectItem TValue="Guid" Value="@(userProfile.Id)">
+                                    @(userProfile.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    <Field>
+                        <FieldLabel>@L["UserProfile"]</FieldLabel>
+                        <Select TValue="Guid" @bind-SelectedValue="@EditingPersonEvaluation.EvaluatedPersonId">
+                            @foreach (var userProfile in UserProfilesCollection)
+                            {
+                                <SelectItem TValue="Guid" Value="@(userProfile.Id)">
+                                    @(userProfile.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    
+                    
+                </Validations>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary"
+                        Clicked="CloseEditPersonEvaluationModalAsync">
+                    @L["Cancel"]
+                </Button>
+                <SubmitButton Form="EditPersonEvaluationForm" Clicked="UpdatePersonEvaluationAsync" />
+@*//<suite-custom-code-block-9>*@
+@*//</suite-custom-code-block-9>*@
+            </ModalFooter>
+        </Form>
+@*//<suite-custom-code-block-10>*@
+@*//</suite-custom-code-block-10>*@
+    </ModalContent>
+</Modal>
+

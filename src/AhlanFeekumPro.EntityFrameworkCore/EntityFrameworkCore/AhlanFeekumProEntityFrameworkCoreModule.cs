@@ -1,3 +1,12 @@
+using AhlanFeekumPro.VerificationCodes;
+using AhlanFeekumPro.PropertyMedias;
+using AhlanFeekumPro.PropertyEvaluations;
+using AhlanFeekumPro.PersonEvaluations;
+using AhlanFeekumPro.FavoriteProperties;
+using AhlanFeekumPro.SiteProperties;
+using AhlanFeekumPro.PropertyTypes;
+using AhlanFeekumPro.PropertyFeatures;
+using AhlanFeekumPro.UserProfiles;
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Uow;
@@ -46,15 +55,33 @@ public class AhlanFeekumProEntityFrameworkCoreModule : AbpModule
     {
         context.Services.AddAbpDbContext<AhlanFeekumProDbContext>(options =>
         {
-                /* Remove "includeAllEntities: true" to create
-                 * default repositories only for aggregate roots */
+            /* Remove "includeAllEntities: true" to create
+             * default repositories only for aggregate roots */
             options.AddDefaultRepositories(includeAllEntities: true);
+            options.AddRepository<UserProfile, UserProfiles.EfCoreUserProfileRepository>();
+
+            options.AddRepository<PropertyFeature, PropertyFeatures.EfCorePropertyFeatureRepository>();
+
+            options.AddRepository<PropertyType, PropertyTypes.EfCorePropertyTypeRepository>();
+
+            options.AddRepository<SiteProperty, SiteProperties.EfCoreSitePropertyRepository>();
+
+            options.AddRepository<FavoriteProperty, FavoriteProperties.EfCoreFavoritePropertyRepository>();
+
+            options.AddRepository<PersonEvaluation, PersonEvaluations.EfCorePersonEvaluationRepository>();
+
+            options.AddRepository<PropertyEvaluation, PropertyEvaluations.EfCorePropertyEvaluationRepository>();
+
+            options.AddRepository<PropertyMedia, PropertyMedias.EfCorePropertyMediaRepository>();
+
+            options.AddRepository<VerificationCode, VerificationCodes.EfCoreVerificationCodeRepository>();
+
         });
 
         Configure<AbpDbContextOptions>(options =>
         {
-                /* The main point to change your DBMS.
-                 * See also AhlanFeekumProDbContextFactory for EF Core tooling. */
+            /* The main point to change your DBMS.
+             * See also AhlanFeekumProDbContextFactory for EF Core tooling. */
             options.UseSqlServer();
         });
 

@@ -1,0 +1,652 @@
+
+
+@page "/user-profiles"
+
+@attribute [Authorize(AhlanFeekumProPermissions.UserProfiles.Default)]
+@using AhlanFeekumPro.UserProfiles
+@using AhlanFeekumPro.Localization
+@using AhlanFeekumPro.Shared
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Web
+@using Blazorise
+@using Blazorise.Components
+@using Blazorise.DataGrid
+@using Volo.Abp.BlazoriseUI
+@using Volo.Abp.BlazoriseUI.Components
+@using Volo.Abp.ObjectMapping
+@using Volo.Abp.AspNetCore.Components.Messages
+@using Volo.Abp.AspNetCore.Components.Web.Theming.Layout
+
+@using AhlanFeekumPro.Permissions
+@using Volo.Abp.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components
+@using Volo.Abp.Http.Client
+@inherits AhlanFeekumProComponentBase
+@inject IUserProfilesAppService UserProfilesAppService
+
+@inject IUiMessageService UiMessageService
+@inject AbpBlazorMessageLocalizerHelper<AhlanFeekumProResource> LH
+@inject IRemoteServiceConfigurationProvider RemoteServiceConfigurationProvider
+@inject NavigationManager NavigationManager
+
+@* ************************* PAGE HEADER ************************* *@
+<PageHeader Title="@L["UserProfiles"]" BreadcrumbItems="BreadcrumbItems" Toolbar="Toolbar">
+
+</PageHeader>
+
+@* ************************* SEARCH ************************* *@
+<Card>
+    <CardBody>
+@*//<suite-custom-code-block-1>*@
+@*//</suite-custom-code-block-1>*@
+        <Row>
+            <div class="col-md-8 col-lg-10">
+                <div class="mb-3">
+                    <Form id="UserProfileSearchForm">
+                        <Addons>
+                            <Addon AddonType="AddonType.Body">
+                                <TextEdit @bind-Text="@Filter.FilterText"
+                                        Autofocus="true"
+                                        Placeholder="@L["Search"]">
+                                </TextEdit>
+                            </Addon>
+                            <Addon AddonType="AddonType.End">
+                                <SubmitButton Form="UserProfileSearchForm" Clicked="GetUserProfilesAsync">
+                                    <Icon Name="IconName.Search" Class="me-1"></Icon>@L["Search"]
+                                </SubmitButton>
+                            </Addon>
+                        </Addons>
+                    </Form>
+                </div>
+            </div>
+                
+                   <div class="col-md-4 col-lg-2">
+            <div class="mb-3">
+               <Button Color="Color.Primary" Outline Style="width:100%" id="AdvancedFilterSectionToggler"
+                         Clicked="@(() => ShowAdvancedFilters = !ShowAdvancedFilters)">@L["Filters"]
+                         <i aria-hidden="true" class="fa ms-1 @(!ShowAdvancedFilters ? "fa-angle-down" : "fa-angle-up")"></i>
+               </Button>
+            </div>
+       </div>
+        
+        <div style="display: @(!ShowAdvancedFilters ? "none" : "block")"  class="mt-3">
+            <Row>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["Name"]</FieldLabel>
+                        <TextEdit Text="@Filter.Name" TextChanged="@OnNameChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["Email"]</FieldLabel>
+                        <TextEdit Text="@Filter.Email" TextChanged="@OnEmailChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["PhoneNumber"]</FieldLabel>
+                        <TextEdit Text="@Filter.PhoneNumber" TextChanged="@OnPhoneNumberChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["Latitude"]</FieldLabel>
+                        <TextEdit Text="@Filter.Latitude" TextChanged="@OnLatitudeChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["Longitude"]</FieldLabel>
+                        <TextEdit Text="@Filter.Longitude" TextChanged="@OnLongitudeChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["Address"]</FieldLabel>
+                        <TextEdit Text="@Filter.Address" TextChanged="@OnAddressChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["ProfilePhoto"]</FieldLabel>
+                        <TextEdit Text="@Filter.ProfilePhoto" TextChanged="@OnProfilePhotoChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["IsSuperHost"]</FieldLabel>
+                        <Select TValue="bool?"
+		SelectedValue="@Filter.IsSuperHost"
+		SelectedValueChanged="@OnIsSuperHostChangedAsync">
+
+<SelectItem></SelectItem>
+<SelectItem Value="true">@L["Yes"]</SelectItem>
+<SelectItem Value="false">@L["No"]</SelectItem>
+
+</Select>                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["IdentityRole"]</FieldLabel>
+                        <Select TValue="Guid?"
+		SelectedValue="@Filter.IdentityRoleId"
+		SelectedValueChanged="@OnIdentityRoleIdChangedAsync">
+
+<SelectItem></SelectItem>
+
+@foreach(var item in IdentityRolesCollection)
+{
+	<SelectItem TValue="Guid?" Value="@item.Id">
+		@item.DisplayName
+	</SelectItem>
+}
+
+</Select>                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["IdentityUser"]</FieldLabel>
+                        <Select TValue="Guid?"
+		SelectedValue="@Filter.IdentityUserId"
+		SelectedValueChanged="@OnIdentityUserIdChangedAsync">
+
+<SelectItem></SelectItem>
+
+@foreach(var item in IdentityUsersCollection)
+{
+	<SelectItem TValue="Guid" Value="@item.Id">
+		@item.DisplayName
+	</SelectItem>
+}
+
+</Select>                       
+                    </Field>
+                </Column>
+            </Row>
+@*//<suite-custom-code-block-2>*@
+@*//</suite-custom-code-block-2>*@
+        </div>
+
+        </Row>
+
+@*//<suite-custom-code-block-3>*@
+@*//</suite-custom-code-block-3>*@
+    </CardBody>
+</Card>
+
+@* ************************* DATA GRID ************************* *@
+<Card>
+    <CardBody>        
+        @if (SelectedUserProfiles.Any())
+        {
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                @if (AllUserProfilesSelected)
+                {
+                    <p class="lead mb-0">
+                        @L["AllItemsAreSelected", TotalCount]
+                    </p>
+                }
+                else
+                {
+                    <p class="lead mb-0">
+                        @if (SelectedUserProfiles.Count > 1)
+                        {
+                            @L["NumberOfItemsOnThisPageAreSelected", SelectedUserProfiles.Count]
+                        }
+                        else
+                        {
+                            @L["OneItemOnThisPageIsSelected"]
+                        }
+                    </p>
+                }
+                    
+                <div>
+                    @if ((SelectedUserProfiles.Count == PageSize || SelectedUserProfiles.Count == UserProfileList.Count) && TotalCount > SelectedUserProfiles.Count)
+                    {
+                        if (!AllUserProfilesSelected)
+                        {
+                            <Button Clicked="SelectAllItems" Class="mx-1 btn-outline-secondary">@L["SelectAllItems", TotalCount]</Button>
+                        }
+                        else
+                        {
+                            <Button Clicked="ClearSelection" Class="mx-1 btn-outline-secondary">@L["ClearSelection"]</Button>
+                        }
+                    }
+                    
+                    <Button Color="Color.Danger" Class="mx-1" Size="Size.Medium" Clicked="DeleteSelectedUserProfilesAsync">
+                        <Icon Name="@IconName.Delete" /> @L["Delete"]
+                    </Button>
+                </div>
+            </div>
+            
+            <hr class="my-1 mx-0"/>
+        }
+        <DataGrid TItem="UserProfileWithNavigationPropertiesDto"
+                  Data="UserProfileList"
+                  
+                  SelectionMode="DataGridSelectionMode.Multiple"
+                  SelectedRows="SelectedUserProfiles"
+                  RowSelectable="@((args) => CanDeleteUserProfile)"
+                  SelectedRowsChanged="SelectedUserProfileRowsChanged"
+                  
+                  
+                  
+                  ReadData="OnDataGridReadAsync"
+                  TotalItems="TotalCount"
+                  ShowPager="true"
+                  Responsive="true"
+                  PageSize="PageSize"
+                  Class="datagrid-detail">
+            <LoadingTemplate>
+                <Row Class="w-100 align-items-center" Style="height: 150px;">
+                    <Column>
+                       <RadarSpinner />
+                    </Column>
+                </Row>
+            </LoadingTemplate>
+            <EmptyTemplate>
+                <Row Class="w-100 align-items-center" Style="height: 150px;">
+                    <Column>
+                        <Heading Size="HeadingSize.Is4" TextAlignment="TextAlignment.Center">@L["NoDataAvailable"]</Heading>
+                    </Column>
+                </Row>
+            </EmptyTemplate>   
+            <DataGridColumns>
+                
+                @if (CanDeleteUserProfile && UserProfileList.Any())
+                {
+                    <DataGridMultiSelectColumn TItem="UserProfileWithNavigationPropertiesDto" DisplayOrder="-1" Width="30px"></DataGridMultiSelectColumn>
+                }
+                
+                <DataGridEntityActionsColumn TItem="UserProfileWithNavigationPropertiesDto" @ref="@EntityActionsColumn">
+                    <DisplayTemplate>
+                        <EntityActions TItem="UserProfileWithNavigationPropertiesDto" EntityActionsColumn="@EntityActionsColumn">
+                            <EntityAction TItem="UserProfileWithNavigationPropertiesDto"
+                                          Visible="@CanEditUserProfile"
+                                          Clicked="async () => await OpenEditUserProfileModalAsync(context)"
+                                          Text="@L["Edit"]"></EntityAction>
+                            <EntityAction TItem="UserProfileWithNavigationPropertiesDto"
+                                          Visible="@CanDeleteUserProfile"
+                                          Clicked="() => DeleteUserProfileAsync(context)"
+                                          ConfirmationMessage="@(()=> L["DeleteConfirmationMessage"])"
+                                          Text="@L["Delete"]"></EntityAction>
+@*//<suite-custom-code-block-4>*@
+@*//</suite-custom-code-block-4>*@
+                        </EntityActions>
+                    </DisplayTemplate>
+                </DataGridEntityActionsColumn>
+               
+              <DataGridColumn TItem="UserProfileWithNavigationPropertiesDto"
+                      Field="UserProfile.Name"
+                      Caption="@L["Name"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="UserProfileWithNavigationPropertiesDto"
+                      Field="UserProfile.Email"
+                      Caption="@L["Email"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="UserProfileWithNavigationPropertiesDto"
+                      Field="UserProfile.PhoneNumber"
+                      Caption="@L["PhoneNumber"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="UserProfileWithNavigationPropertiesDto"
+                      Field="UserProfile.Latitude"
+                      Caption="@L["Latitude"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="UserProfileWithNavigationPropertiesDto"
+                      Field="UserProfile.Longitude"
+                      Caption="@L["Longitude"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="UserProfileWithNavigationPropertiesDto"
+                      Field="UserProfile.Address"
+                      Caption="@L["Address"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="UserProfileWithNavigationPropertiesDto"
+                      Field="UserProfile.ProfilePhoto"
+                      Caption="@L["ProfilePhoto"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="UserProfileWithNavigationPropertiesDto"
+                      Field="UserProfile.IsSuperHost"
+                      Caption="@L["IsSuperHost"]">
+                    <DisplayTemplate>
+                        @if (context.UserProfile.IsSuperHost)
+                        {
+                            <Icon TextColor="TextColor.Success" Name="@IconName.Check" />
+                        }
+                        else
+                        {
+                            <Icon TextColor="TextColor.Danger" Name="@IconName.Times" />
+                        }
+                    </DisplayTemplate>
+              </DataGridColumn>
+
+
+              <DataGridColumn TItem="UserProfileWithNavigationPropertiesDto"
+                      Field="IdentityRole.Name"
+                      Caption="@L["IdentityRole"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="UserProfileWithNavigationPropertiesDto"
+                      Field="IdentityUser.UserName"
+                      Caption="@L["IdentityUser"]">
+              </DataGridColumn>
+
+            </DataGridColumns>
+            
+            
+        </DataGrid>
+    </CardBody>
+</Card>
+
+@* ************************* CREATE MODAL ************************* *@
+<Modal @ref="CreateUserProfileModal" Closing="@CreateUserProfileModal.CancelClosingModalWhenFocusLost">
+    <ModalContent Centered="true">
+@*//<suite-custom-code-block-5>*@
+@*//</suite-custom-code-block-5>*@
+        <Form id="CreateUserProfileForm">
+            <ModalHeader>
+                <ModalTitle>@L["NewUserProfile"]</ModalTitle>
+                <CloseButton Clicked="CloseCreateUserProfileModalAsync" />
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="@NewUserProfileValidations"
+                            Mode="ValidationMode.Auto"
+                            Model="@NewUserProfile"
+                            ValidateOnLoad="false">
+                    
+                    
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Name"] *</FieldLabel>
+                            <TextEdit @bind-Text="@NewUserProfile.Name"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Email"]</FieldLabel>
+                            <TextEdit @bind-Text="@NewUserProfile.Email"  Role="TextRole.Email" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["PhoneNumber"]</FieldLabel>
+                            <TextEdit @bind-Text="@NewUserProfile.PhoneNumber"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Latitude"]</FieldLabel>
+                            <TextEdit @bind-Text="@NewUserProfile.Latitude"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Longitude"]</FieldLabel>
+                            <TextEdit @bind-Text="@NewUserProfile.Longitude"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Address"]</FieldLabel>
+                            <TextEdit @bind-Text="@NewUserProfile.Address"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["ProfilePhoto"]</FieldLabel>
+                            <TextEdit @bind-Text="@NewUserProfile.ProfilePhoto"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Field>
+                        <Check TValue="bool" @bind-Checked="@NewUserProfile.IsSuperHost" >@L["IsSuperHost"]</Check>
+                    </Field>
+
+                    <Field>
+                        <FieldLabel>@L["IdentityRole"]</FieldLabel>
+                        <Select TValue="Guid?" @bind-SelectedValue="@NewUserProfile.IdentityRoleId">
+                            <SelectItem TValue="Guid?" Value="null"></SelectItem>
+                            @foreach (var identityRole in IdentityRolesCollection)
+                            {
+                                <SelectItem TValue="Guid?" Value="@(identityRole.Id)">
+                                    @(identityRole.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    <Field>
+                        <FieldLabel>@L["IdentityUser"]</FieldLabel>
+                        <Select TValue="Guid" @bind-SelectedValue="@NewUserProfile.IdentityUserId">
+                            @foreach (var identityUser in IdentityUsersCollection)
+                            {
+                                <SelectItem TValue="Guid" Value="@(identityUser.Id)">
+                                    @(identityUser.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    
+                    
+                </Validations>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary"
+                        Clicked="CloseCreateUserProfileModalAsync">
+                    @L["Cancel"]
+                </Button>
+                <SubmitButton Form="CreateUserProfileForm" Clicked="CreateUserProfileAsync"/>
+@*//<suite-custom-code-block-6>*@
+@*//</suite-custom-code-block-6>*@
+            </ModalFooter>
+        </Form>
+@*//<suite-custom-code-block-7>*@
+@*//</suite-custom-code-block-7>*@
+    </ModalContent>
+</Modal>
+
+@* ************************* EDIT MODAL ************************* *@
+<Modal @ref="EditUserProfileModal" Closing="@EditUserProfileModal.CancelClosingModalWhenFocusLost">
+    <ModalContent Centered="true">
+@*//<suite-custom-code-block-8>*@
+@*//</suite-custom-code-block-8>*@
+        <Form id="EditUserProfileForm">
+            <ModalHeader>
+                <ModalTitle>@L["Update"]</ModalTitle>
+                <CloseButton Clicked="CloseEditUserProfileModalAsync" />
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="@EditingUserProfileValidations"
+                            Mode="ValidationMode.Auto"
+                            Model="@EditingUserProfile"
+                            ValidateOnLoad="false">
+                    
+                    
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Name"] *</FieldLabel>
+                            <TextEdit @bind-Text="@EditingUserProfile.Name"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Email"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingUserProfile.Email"  Role="TextRole.Email" >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["PhoneNumber"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingUserProfile.PhoneNumber"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Latitude"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingUserProfile.Latitude"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Longitude"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingUserProfile.Longitude"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Address"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingUserProfile.Address"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["ProfilePhoto"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingUserProfile.ProfilePhoto"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Field>
+                        <Check TValue="bool" @bind-Checked="@EditingUserProfile.IsSuperHost" >@L["IsSuperHost"]</Check>
+                    </Field>
+
+                    <Field>
+                        <FieldLabel>@L["IdentityRole"]</FieldLabel>
+                        <Select TValue="Guid?" @bind-SelectedValue="@EditingUserProfile.IdentityRoleId">
+                            <SelectItem TValue="Guid?" Value="null"></SelectItem>
+                            @foreach (var identityRole in IdentityRolesCollection)
+                            {
+                                <SelectItem TValue="Guid?" Value="@(identityRole.Id)">
+                                    @(identityRole.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    <Field>
+                        <FieldLabel>@L["IdentityUser"]</FieldLabel>
+                        <Select TValue="Guid" @bind-SelectedValue="@EditingUserProfile.IdentityUserId">
+                            @foreach (var identityUser in IdentityUsersCollection)
+                            {
+                                <SelectItem TValue="Guid" Value="@(identityUser.Id)">
+                                    @(identityUser.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    
+                    
+                </Validations>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary"
+                        Clicked="CloseEditUserProfileModalAsync">
+                    @L["Cancel"]
+                </Button>
+                <SubmitButton Form="EditUserProfileForm" Clicked="UpdateUserProfileAsync" />
+@*//<suite-custom-code-block-9>*@
+@*//</suite-custom-code-block-9>*@
+            </ModalFooter>
+        </Form>
+@*//<suite-custom-code-block-10>*@
+@*//</suite-custom-code-block-10>*@
+    </ModalContent>
+</Modal>
+
