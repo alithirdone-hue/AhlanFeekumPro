@@ -1,3 +1,6 @@
+using AhlanFeekumPro.OnlyForYouSections;
+using AhlanFeekumPro.SpecialAdvertisments;
+using AhlanFeekumPro.Governorates;
 using AhlanFeekumPro.VerificationCodes;
 using AhlanFeekumPro.PropertyMedias;
 using AhlanFeekumPro.PropertyEvaluations;
@@ -61,5 +64,17 @@ public class AhlanFeekumProApplicationAutoMapperProfile : Profile
 
         CreateMap<VerificationCode, VerificationCodeDto>();
         CreateMap<VerificationCode, VerificationCodeExcelDto>();
+
+        CreateMap<Governorate, GovernorateDto>();
+        CreateMap<Governorate, GovernorateExcelDto>();
+
+        CreateMap<Governorate, LookupDto<Guid>>().ForMember(dest => dest.DisplayName, opt => opt.MapFrom(src => src.Title));
+
+        CreateMap<SpecialAdvertisment, SpecialAdvertismentDto>();
+        CreateMap<SpecialAdvertisment, SpecialAdvertismentExcelDto>();
+        CreateMap<SpecialAdvertismentWithNavigationProperties, SpecialAdvertismentWithNavigationPropertiesDto>();
+
+        CreateMap<OnlyForYouSection, OnlyForYouSectionDto>();
+        CreateMap<OnlyForYouSection, OnlyForYouSectionExcelDto>();
     }
 }

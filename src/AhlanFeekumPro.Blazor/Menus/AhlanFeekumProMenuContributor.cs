@@ -142,7 +142,7 @@ icon: "fa fa-file-alt",
                 AhlanFeekumProMenus.SiteProperties,
                 l["Menu:SiteProperties"],
                 url: "/site-properties",
-                icon: "fa fa-file-alt",
+icon: "fa fa-file-alt",
                 requiredPermissionName: AhlanFeekumProPermissions.SiteProperties.Default)
         );
 
@@ -189,6 +189,33 @@ icon: "fa fa-file-alt",
                 url: "/verification-codes",
                 icon: "fa fa-file-alt",
                 requiredPermissionName: AhlanFeekumProPermissions.VerificationCodes.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.Governorates,
+                l["Menu:Governorates"],
+                url: "/governorates",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.Governorates.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.SpecialAdvertisments,
+                l["Menu:SpecialAdvertisments"],
+                url: "/special-advertisments",
+icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.SpecialAdvertisments.Default)
+        );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.OnlyForYouSections,
+                l["Menu:OnlyForYouSections"],
+                url: "/only-for-you-sections",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.OnlyForYouSections.Default)
         );
         return Task.CompletedTask;
     }

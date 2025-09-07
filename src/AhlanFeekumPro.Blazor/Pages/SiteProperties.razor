@@ -80,6 +80,12 @@
                 </Column>
                 <Column ColumnSize="ColumnSize.Is3">
                     <Field>
+                        <FieldLabel>@L["HotelName"]</FieldLabel>
+                        <TextEdit Text="@Filter.HotelName" TextChanged="@OnHotelNameChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
                         <FieldLabel>@L["MinBedrooms"]</FieldLabel>
                         <NumericEdit TValue="int?" 
              Value="@Filter.BedroomsMin"
@@ -261,6 +267,25 @@
                 </Column>
                 <Column ColumnSize="ColumnSize.Is3">
                     <Field>
+                        <FieldLabel>@L["Governorate"]</FieldLabel>
+                        <Select TValue="Guid?"
+		SelectedValue="@Filter.GovernorateId"
+		SelectedValueChanged="@OnGovernorateIdChangedAsync">
+
+<SelectItem></SelectItem>
+
+@foreach(var item in GovernoratesCollection)
+{
+	<SelectItem TValue="Guid" Value="@item.Id">
+		@item.DisplayName
+	</SelectItem>
+}
+
+</Select>                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
                         <FieldLabel>@L["PropertyFeature"]</FieldLabel>
                         <Select TValue="Guid?"
 		SelectedValue="@Filter.PropertyFeatureId"
@@ -398,6 +423,11 @@
               </DataGridColumn>
 
               <DataGridColumn TItem="SitePropertyWithNavigationPropertiesDto"
+                      Field="SiteProperty.HotelName"
+                      Caption="@L["HotelName"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="SitePropertyWithNavigationPropertiesDto"
                       Field="SiteProperty.Bedrooms"
                       Caption="@L["Bedrooms"]">
               </DataGridColumn>
@@ -483,6 +513,11 @@
                       Caption="@L["PropertyType"]">
               </DataGridColumn>
 
+              <DataGridColumn TItem="SitePropertyWithNavigationPropertiesDto"
+                      Field="Governorate.Title"
+                      Caption="@L["Governorate"]">
+              </DataGridColumn>
+
             </DataGridColumns>
             
             
@@ -517,6 +552,18 @@
                         <Field>
                             <FieldLabel>@L["PropertyTitle"] *</FieldLabel>
                             <TextEdit @bind-Text="@NewSiteProperty.PropertyTitle"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["HotelName"]</FieldLabel>
+                            <TextEdit @bind-Text="@NewSiteProperty.HotelName"  >
                                 <Feedback>
                                     <ValidationError />
                                 </Feedback>
@@ -698,6 +745,19 @@
                     </Field>
 
 
+                    <Field>
+                        <FieldLabel>@L["Governorate"]</FieldLabel>
+                        <Select TValue="Guid" @bind-SelectedValue="@NewSiteProperty.GovernorateId">
+                            @foreach (var governorate in GovernoratesCollection)
+                            {
+                                <SelectItem TValue="Guid" Value="@(governorate.Id)">
+                                    @(governorate.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
                     </TabPanel>
                     <TabPanel Name="propertyFeatures-create-tab">
 
@@ -795,6 +855,18 @@
                         <Field>
                             <FieldLabel>@L["PropertyTitle"] *</FieldLabel>
                             <TextEdit @bind-Text="@EditingSiteProperty.PropertyTitle"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["HotelName"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingSiteProperty.HotelName"  >
                                 <Feedback>
                                     <ValidationError />
                                 </Feedback>
@@ -970,6 +1042,19 @@
                             {
                                 <SelectItem TValue="Guid" Value="@(propertyType.Id)">
                                     @(propertyType.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    <Field>
+                        <FieldLabel>@L["Governorate"]</FieldLabel>
+                        <Select TValue="Guid" @bind-SelectedValue="@EditingSiteProperty.GovernorateId">
+                            @foreach (var governorate in GovernoratesCollection)
+                            {
+                                <SelectItem TValue="Guid" Value="@(governorate.Id)">
+                                    @(governorate.DisplayName)
                                 </SelectItem>
                             }
                         </Select>

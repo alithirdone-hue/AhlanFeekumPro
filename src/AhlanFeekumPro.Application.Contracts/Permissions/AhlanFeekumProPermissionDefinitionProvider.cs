@@ -60,6 +60,21 @@ public class AhlanFeekumProPermissionDefinitionProvider : PermissionDefinitionPr
         verificationCodePermission.AddChild(AhlanFeekumProPermissions.VerificationCodes.Create, L("Permission:Create"));
         verificationCodePermission.AddChild(AhlanFeekumProPermissions.VerificationCodes.Edit, L("Permission:Edit"));
         verificationCodePermission.AddChild(AhlanFeekumProPermissions.VerificationCodes.Delete, L("Permission:Delete"));
+
+        var governoratePermission = myGroup.AddPermission(AhlanFeekumProPermissions.Governorates.Default, L("Permission:Governorates"));
+        governoratePermission.AddChild(AhlanFeekumProPermissions.Governorates.Create, L("Permission:Create"));
+        governoratePermission.AddChild(AhlanFeekumProPermissions.Governorates.Edit, L("Permission:Edit"));
+        governoratePermission.AddChild(AhlanFeekumProPermissions.Governorates.Delete, L("Permission:Delete"));
+
+        var specialAdvertismentPermission = myGroup.AddPermission(AhlanFeekumProPermissions.SpecialAdvertisments.Default, L("Permission:SpecialAdvertisments"));
+        specialAdvertismentPermission.AddChild(AhlanFeekumProPermissions.SpecialAdvertisments.Create, L("Permission:Create"));
+        specialAdvertismentPermission.AddChild(AhlanFeekumProPermissions.SpecialAdvertisments.Edit, L("Permission:Edit"));
+        specialAdvertismentPermission.AddChild(AhlanFeekumProPermissions.SpecialAdvertisments.Delete, L("Permission:Delete"));
+
+        var onlyForYouSectionPermission = myGroup.AddPermission(AhlanFeekumProPermissions.OnlyForYouSections.Default, L("Permission:OnlyForYouSections"));
+        onlyForYouSectionPermission.AddChild(AhlanFeekumProPermissions.OnlyForYouSections.Create, L("Permission:Create"));
+        onlyForYouSectionPermission.AddChild(AhlanFeekumProPermissions.OnlyForYouSections.Edit, L("Permission:Edit"));
+        onlyForYouSectionPermission.AddChild(AhlanFeekumProPermissions.OnlyForYouSections.Delete, L("Permission:Delete"));
     }
 
     private static LocalizableString L(string name)

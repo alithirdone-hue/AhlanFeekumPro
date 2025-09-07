@@ -9,6 +9,7 @@ namespace AhlanFeekumPro.SiteProperties
     public abstract class SitePropertyDtoBase : FullAuditedEntityDto<Guid>, IHasConcurrencyStamp
     {
         public string PropertyTitle { get; set; } = null!;
+        public string? HotelName { get; set; }
         public int Bedrooms { get; set; }
         public int Bathrooms { get; set; }
         public int NumberOfBed { get; set; }
@@ -24,6 +25,7 @@ namespace AhlanFeekumPro.SiteProperties
         public int PricePerNight { get; set; }
         public bool IsActive { get; set; }
         public Guid PropertyTypeId { get; set; }
+        public Guid GovernorateId { get; set; }
 
         public string ConcurrencyStamp { get; set; } = null!;
 

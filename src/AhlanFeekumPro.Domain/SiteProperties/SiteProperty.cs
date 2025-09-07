@@ -1,4 +1,5 @@
 using AhlanFeekumPro.PropertyTypes;
+using AhlanFeekumPro.Governorates;
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -16,6 +17,9 @@ namespace AhlanFeekumPro.SiteProperties
     {
         [NotNull]
         public virtual string PropertyTitle { get; set; }
+
+        [CanBeNull]
+        public virtual string? HotelName { get; set; }
 
         public virtual int Bedrooms { get; set; }
 
@@ -51,6 +55,7 @@ namespace AhlanFeekumPro.SiteProperties
 
         public virtual bool IsActive { get; set; }
         public Guid PropertyTypeId { get; set; }
+        public Guid GovernorateId { get; set; }
         public ICollection<SitePropertyPropertyFeature> PropertyFeatures { get; private set; }
 
         protected SitePropertyBase()
@@ -58,7 +63,7 @@ namespace AhlanFeekumPro.SiteProperties
 
         }
 
-        public SitePropertyBase(Guid id, Guid propertyTypeId, string propertyTitle, int bedrooms, int bathrooms, int numberOfBed, int floor, int maximumNumberOfGuest, int livingrooms, string propertyDescription, int pricePerNight, bool isActive, string? hourseRules = null, string? importantInformation = null, string? address = null, string? streetAndBuildingNumber = null, string? landMark = null)
+        public SitePropertyBase(Guid id, Guid propertyTypeId, Guid governorateId, string propertyTitle, int bedrooms, int bathrooms, int numberOfBed, int floor, int maximumNumberOfGuest, int livingrooms, string propertyDescription, int pricePerNight, bool isActive, string? hotelName = null, string? hourseRules = null, string? importantInformation = null, string? address = null, string? streetAndBuildingNumber = null, string? landMark = null)
         {
 
             Id = id;
@@ -74,12 +79,14 @@ namespace AhlanFeekumPro.SiteProperties
             PropertyDescription = propertyDescription;
             PricePerNight = pricePerNight;
             IsActive = isActive;
+            HotelName = hotelName;
             HourseRules = hourseRules;
             ImportantInformation = importantInformation;
             Address = address;
             StreetAndBuildingNumber = streetAndBuildingNumber;
             LandMark = landMark;
             PropertyTypeId = propertyTypeId;
+            GovernorateId = governorateId;
             PropertyFeatures = new Collection<SitePropertyPropertyFeature>();
         }
         public virtual void AddPropertyFeature(Guid propertyFeatureId)

@@ -84,4 +84,28 @@ public static class AhlanFeekumProPermissions
         public const string Create = Default + ".Create";
         public const string Delete = Default + ".Delete";
     }
+
+    public static class Governorates
+    {
+        public const string Default = GroupName + ".Governorates";
+        public const string Edit = Default + ".Edit";
+        public const string Create = Default + ".Create";
+        public const string Delete = Default + ".Delete";
+    }
+
+    public static class SpecialAdvertisments
+    {
+        public const string Default = GroupName + ".SpecialAdvertisments";
+        public const string Edit = Default + ".Edit";
+        public const string Create = Default + ".Create";
+        public const string Delete = Default + ".Delete";
+    }
+
+    public static class OnlyForYouSections
+    {
+        public const string Default = GroupName + ".OnlyForYouSections";
+        public const string Edit = Default + ".Edit";
+        public const string Create = Default + ".Create";
+        public const string Delete = Default + ".Delete";
+    }
 }

@@ -29,4 +29,10 @@ public class AhlanFeekumProMenus
 
     public const string PropertyEvaluations = Prefix + ".PropertyEvaluations";
 
+    public const string Governorates = Prefix + ".Governorates";
+
+    public const string SpecialAdvertisments = Prefix + ".SpecialAdvertisments";
+
+    public const string OnlyForYouSections = Prefix + ".OnlyForYouSections";
+
 }

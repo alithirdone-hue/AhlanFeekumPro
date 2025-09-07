@@ -10,6 +10,7 @@ namespace AhlanFeekumPro.SiteProperties
         public string? FilterText { get; set; }
 
         public string? PropertyTitle { get; set; }
+        public string? HotelName { get; set; }
         public int? BedroomsMin { get; set; }
         public int? BedroomsMax { get; set; }
         public int? BathroomsMin { get; set; }
@@ -32,6 +33,7 @@ namespace AhlanFeekumPro.SiteProperties
         public int? PricePerNightMax { get; set; }
         public bool? IsActive { get; set; }
         public Guid? PropertyTypeId { get; set; }
+        public Guid? GovernorateId { get; set; }
         public Guid? PropertyFeatureId { get; set; }
 
         public SitePropertyExcelDownloadDtoBase()

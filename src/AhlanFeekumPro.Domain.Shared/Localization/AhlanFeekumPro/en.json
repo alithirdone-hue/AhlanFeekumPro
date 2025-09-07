@@ -174,6 +174,23 @@
     "MinSecurityCode": "Min Security Code",
     "MaxSecurityCode": "Max Security Code",
     "NewVerificationCode": "New Verification Code",
-    "Menu:VerificationCodes": "Verification Codes"
+    "Menu:VerificationCodes": "Verification Codes",
+    "Permission:Governorates": "Governorates",
+    "Governorates": "Governorates",
+    "NewGovernorate": "New Governorate",
+    "Menu:Governorates": "Governorates",
+    "Governorate": "Governorate",
+    "HotelName": "Hotel Name",
+    "Permission:SpecialAdvertisments": "Special Advertisments",
+    "SpecialAdvertisments": "Special Advertisments",
+    "NewSpecialAdvertisment": "New Special Advertisment",
+    "Menu:SpecialAdvertisments": "Special Advertisments",
+    "Permission:OnlyForYouSections": "Only For You Sections",
+    "FirstPhoto": "First Photo",
+    "SecondPhoto": "Second Photo",
+    "ThirdPhoto": "Third Photo",
+    "OnlyForYouSections": "Only For You Sections",
+    "NewOnlyForYouSection": "New Only For You Section",
+    "Menu:OnlyForYouSections": "Only For You Sections"
   }
 }

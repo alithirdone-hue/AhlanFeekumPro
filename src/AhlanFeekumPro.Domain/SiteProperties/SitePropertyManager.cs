@@ -25,15 +25,16 @@ namespace AhlanFeekumPro.SiteProperties
 
         public virtual async Task<SiteProperty> CreateAsync(
         List<Guid> propertyFeatureIds,
-        Guid propertyTypeId, string propertyTitle, int bedrooms, int bathrooms, int numberOfBed, int floor, int maximumNumberOfGuest, int livingrooms, string propertyDescription, int pricePerNight, bool isActive, string? hourseRules = null, string? importantInformation = null, string? address = null, string? streetAndBuildingNumber = null, string? landMark = null)
+        Guid propertyTypeId, Guid governorateId, string propertyTitle, int bedrooms, int bathrooms, int numberOfBed, int floor, int maximumNumberOfGuest, int livingrooms, string propertyDescription, int pricePerNight, bool isActive, string? hotelName = null, string? hourseRules = null, string? importantInformation = null, string? address = null, string? streetAndBuildingNumber = null, string? landMark = null)
         {
             Check.NotNull(propertyTypeId, nameof(propertyTypeId));
+            Check.NotNull(governorateId, nameof(governorateId));
             Check.NotNullOrWhiteSpace(propertyTitle, nameof(propertyTitle));
             Check.NotNullOrWhiteSpace(propertyDescription, nameof(propertyDescription));
 
             var siteProperty = new SiteProperty(
              GuidGenerator.Create(),
-             propertyTypeId, propertyTitle, bedrooms, bathrooms, numberOfBed, floor, maximumNumberOfGuest, livingrooms, propertyDescription, pricePerNight, isActive, hourseRules, importantInformation, address, streetAndBuildingNumber, landMark
+             propertyTypeId, governorateId, propertyTitle, bedrooms, bathrooms, numberOfBed, floor, maximumNumberOfGuest, livingrooms, propertyDescription, pricePerNight, isActive, hotelName, hourseRules, importantInformation, address, streetAndBuildingNumber, landMark
              );
 
             await SetPropertyFeaturesAsync(siteProperty, propertyFeatureIds);
@@ -44,10 +45,11 @@ namespace AhlanFeekumPro.SiteProperties
         public virtual async Task<SiteProperty> UpdateAsync(
             Guid id,
             List<Guid> propertyFeatureIds,
-        Guid propertyTypeId, string propertyTitle, int bedrooms, int bathrooms, int numberOfBed, int floor, int maximumNumberOfGuest, int livingrooms, string propertyDescription, int pricePerNight, bool isActive, string? hourseRules = null, string? importantInformation = null, string? address = null, string? streetAndBuildingNumber = null, string? landMark = null, [CanBeNull] string? concurrencyStamp = null
+        Guid propertyTypeId, Guid governorateId, string propertyTitle, int bedrooms, int bathrooms, int numberOfBed, int floor, int maximumNumberOfGuest, int livingrooms, string propertyDescription, int pricePerNight, bool isActive, string? hotelName = null, string? hourseRules = null, string? importantInformation = null, string? address = null, string? streetAndBuildingNumber = null, string? landMark = null, [CanBeNull] string? concurrencyStamp = null
         )
         {
             Check.NotNull(propertyTypeId, nameof(propertyTypeId));
+            Check.NotNull(governorateId, nameof(governorateId));
             Check.NotNullOrWhiteSpace(propertyTitle, nameof(propertyTitle));
             Check.NotNullOrWhiteSpace(propertyDescription, nameof(propertyDescription));
 
@@ -57,6 +59,7 @@ namespace AhlanFeekumPro.SiteProperties
             var siteProperty = await AsyncExecuter.FirstOrDefaultAsync(query);
 
             siteProperty.PropertyTypeId = propertyTypeId;
+            siteProperty.GovernorateId = governorateId;
             siteProperty.PropertyTitle = propertyTitle;
             siteProperty.Bedrooms = bedrooms;
             siteProperty.Bathrooms = bathrooms;
@@ -67,6 +70,7 @@ namespace AhlanFeekumPro.SiteProperties
             siteProperty.PropertyDescription = propertyDescription;
             siteProperty.PricePerNight = pricePerNight;
             siteProperty.IsActive = isActive;
+            siteProperty.HotelName = hotelName;
             siteProperty.HourseRules = hourseRules;
             siteProperty.ImportantInformation = importantInformation;
             siteProperty.Address = address;

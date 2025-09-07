@@ -1,5 +1,6 @@
 using AhlanFeekumPro.Shared;
 using AhlanFeekumPro.PropertyFeatures;
+using AhlanFeekumPro.Governorates;
 using AhlanFeekumPro.PropertyTypes;
 using System;
 using System.IO;
@@ -32,21 +33,23 @@ namespace AhlanFeekumPro.SiteProperties
         protected SitePropertyManager _sitePropertyManager;
 
         protected IRepository<AhlanFeekumPro.PropertyTypes.PropertyType, Guid> _propertyTypeRepository;
+        protected IRepository<AhlanFeekumPro.Governorates.Governorate, Guid> _governorateRepository;
         protected IRepository<AhlanFeekumPro.PropertyFeatures.PropertyFeature, Guid> _propertyFeatureRepository;
 
-        public SitePropertiesAppServiceBase(ISitePropertyRepository sitePropertyRepository, SitePropertyManager sitePropertyManager, IDistributedCache<SitePropertyDownloadTokenCacheItem, string> downloadTokenCache, IRepository<AhlanFeekumPro.PropertyTypes.PropertyType, Guid> propertyTypeRepository, IRepository<AhlanFeekumPro.PropertyFeatures.PropertyFeature, Guid> propertyFeatureRepository)
+        public SitePropertiesAppServiceBase(ISitePropertyRepository sitePropertyRepository, SitePropertyManager sitePropertyManager, IDistributedCache<SitePropertyDownloadTokenCacheItem, string> downloadTokenCache, IRepository<AhlanFeekumPro.PropertyTypes.PropertyType, Guid> propertyTypeRepository, IRepository<AhlanFeekumPro.Governorates.Governorate, Guid> governorateRepository, IRepository<AhlanFeekumPro.PropertyFeatures.PropertyFeature, Guid> propertyFeatureRepository)
         {
             _downloadTokenCache = downloadTokenCache;
             _sitePropertyRepository = sitePropertyRepository;
             _sitePropertyManager = sitePropertyManager; _propertyTypeRepository = propertyTypeRepository;
+            _governorateRepository = governorateRepository;
             _propertyFeatureRepository = propertyFeatureRepository;
 
         }
 
         public virtual async Task<PagedResultDto<SitePropertyWithNavigationPropertiesDto>> GetListAsync(GetSitePropertiesInput input)
         {
-            var totalCount = await _sitePropertyRepository.GetCountAsync(input.FilterText, input.PropertyTitle, input.BedroomsMin, input.BedroomsMax, input.BathroomsMin, input.BathroomsMax, input.NumberOfBedMin, input.NumberOfBedMax, input.FloorMin, input.FloorMax, input.MaximumNumberOfGuestMin, input.MaximumNumberOfGuestMax, input.LivingroomsMin, input.LivingroomsMax, input.PropertyDescription, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark, input.PricePerNightMin, input.PricePerNightMax, input.IsActive, input.PropertyTypeId, input.PropertyFeatureId);
-            var items = await _sitePropertyRepository.GetListWithNavigationPropertiesAsync(input.FilterText, input.PropertyTitle, input.BedroomsMin, input.BedroomsMax, input.BathroomsMin, input.BathroomsMax, input.NumberOfBedMin, input.NumberOfBedMax, input.FloorMin, input.FloorMax, input.MaximumNumberOfGuestMin, input.MaximumNumberOfGuestMax, input.LivingroomsMin, input.LivingroomsMax, input.PropertyDescription, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark, input.PricePerNightMin, input.PricePerNightMax, input.IsActive, input.PropertyTypeId, input.PropertyFeatureId, input.Sorting, input.MaxResultCount, input.SkipCount);
+            var totalCount = await _sitePropertyRepository.GetCountAsync(input.FilterText, input.PropertyTitle, input.HotelName, input.BedroomsMin, input.BedroomsMax, input.BathroomsMin, input.BathroomsMax, input.NumberOfBedMin, input.NumberOfBedMax, input.FloorMin, input.FloorMax, input.MaximumNumberOfGuestMin, input.MaximumNumberOfGuestMax, input.LivingroomsMin, input.LivingroomsMax, input.PropertyDescription, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark, input.PricePerNightMin, input.PricePerNightMax, input.IsActive, input.PropertyTypeId, input.GovernorateId, input.PropertyFeatureId);
+            var items = await _sitePropertyRepository.GetListWithNavigationPropertiesAsync(input.FilterText, input.PropertyTitle, input.HotelName, input.BedroomsMin, input.BedroomsMax, input.BathroomsMin, input.BathroomsMax, input.NumberOfBedMin, input.NumberOfBedMax, input.FloorMin, input.FloorMax, input.MaximumNumberOfGuestMin, input.MaximumNumberOfGuestMax, input.LivingroomsMin, input.LivingroomsMax, input.PropertyDescription, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark, input.PricePerNightMin, input.PricePerNightMax, input.IsActive, input.PropertyTypeId, input.GovernorateId, input.PropertyFeatureId, input.Sorting, input.MaxResultCount, input.SkipCount);
 
             return new PagedResultDto<SitePropertyWithNavigationPropertiesDto>
             {
@@ -82,6 +85,22 @@ namespace AhlanFeekumPro.SiteProperties
             };
         }
 
+        public virtual async Task<PagedResultDto<LookupDto<Guid>>> GetGovernorateLookupAsync(LookupRequestDto input)
+        {
+            var query = (await _governorateRepository.GetQueryableAsync())
+                .WhereIf(!string.IsNullOrWhiteSpace(input.Filter),
+                    x => x.Title != null &&
+                         x.Title.Contains(input.Filter));
+
+            var lookupData = await query.PageBy(input.SkipCount, input.MaxResultCount).ToDynamicListAsync<AhlanFeekumPro.Governorates.Governorate>();
+            var totalCount = query.Count();
+            return new PagedResultDto<LookupDto<Guid>>
+            {
+                TotalCount = totalCount,
+                Items = ObjectMapper.Map<List<AhlanFeekumPro.Governorates.Governorate>, List<LookupDto<Guid>>>(lookupData)
+            };
+        }
+
         public virtual async Task<PagedResultDto<LookupDto<Guid>>> GetPropertyFeatureLookupAsync(LookupRequestDto input)
         {
             var query = (await _propertyFeatureRepository.GetQueryableAsync())
@@ -111,9 +130,13 @@ namespace AhlanFeekumPro.SiteProperties
             {
                 throw new UserFriendlyException(L["The {0} field is required.", L["PropertyType"]]);
             }
+            if (input.GovernorateId == default)
+            {
+                throw new UserFriendlyException(L["The {0} field is required.", L["Governorate"]]);
+            }
 
             var siteProperty = await _sitePropertyManager.CreateAsync(
-            input.PropertyFeatureIds, input.PropertyTypeId, input.PropertyTitle, input.Bedrooms, input.Bathrooms, input.NumberOfBed, input.Floor, input.MaximumNumberOfGuest, input.Livingrooms, input.PropertyDescription, input.PricePerNight, input.IsActive, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark
+            input.PropertyFeatureIds, input.PropertyTypeId, input.GovernorateId, input.PropertyTitle, input.Bedrooms, input.Bathrooms, input.NumberOfBed, input.Floor, input.MaximumNumberOfGuest, input.Livingrooms, input.PropertyDescription, input.PricePerNight, input.IsActive, input.HotelName, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark
             );
 
             return ObjectMapper.Map<SiteProperty, SitePropertyDto>(siteProperty);
@@ -126,10 +149,14 @@ namespace AhlanFeekumPro.SiteProperties
             {
                 throw new UserFriendlyException(L["The {0} field is required.", L["PropertyType"]]);
             }
+            if (input.GovernorateId == default)
+            {
+                throw new UserFriendlyException(L["The {0} field is required.", L["Governorate"]]);
+            }
 
             var siteProperty = await _sitePropertyManager.UpdateAsync(
             id,
-            input.PropertyFeatureIds, input.PropertyTypeId, input.PropertyTitle, input.Bedrooms, input.Bathrooms, input.NumberOfBed, input.Floor, input.MaximumNumberOfGuest, input.Livingrooms, input.PropertyDescription, input.PricePerNight, input.IsActive, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark, input.ConcurrencyStamp
+            input.PropertyFeatureIds, input.PropertyTypeId, input.GovernorateId, input.PropertyTitle, input.Bedrooms, input.Bathrooms, input.NumberOfBed, input.Floor, input.MaximumNumberOfGuest, input.Livingrooms, input.PropertyDescription, input.PricePerNight, input.IsActive, input.HotelName, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark, input.ConcurrencyStamp
             );
 
             return ObjectMapper.Map<SiteProperty, SitePropertyDto>(siteProperty);
@@ -144,10 +171,11 @@ namespace AhlanFeekumPro.SiteProperties
                 throw new AbpAuthorizationException("Invalid download token: " + input.DownloadToken);
             }
 
-            var siteProperties = await _sitePropertyRepository.GetListWithNavigationPropertiesAsync(input.FilterText, input.PropertyTitle, input.BedroomsMin, input.BedroomsMax, input.BathroomsMin, input.BathroomsMax, input.NumberOfBedMin, input.NumberOfBedMax, input.FloorMin, input.FloorMax, input.MaximumNumberOfGuestMin, input.MaximumNumberOfGuestMax, input.LivingroomsMin, input.LivingroomsMax, input.PropertyDescription, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark, input.PricePerNightMin, input.PricePerNightMax, input.IsActive, input.PropertyTypeId, input.PropertyFeatureId);
+            var siteProperties = await _sitePropertyRepository.GetListWithNavigationPropertiesAsync(input.FilterText, input.PropertyTitle, input.HotelName, input.BedroomsMin, input.BedroomsMax, input.BathroomsMin, input.BathroomsMax, input.NumberOfBedMin, input.NumberOfBedMax, input.FloorMin, input.FloorMax, input.MaximumNumberOfGuestMin, input.MaximumNumberOfGuestMax, input.LivingroomsMin, input.LivingroomsMax, input.PropertyDescription, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark, input.PricePerNightMin, input.PricePerNightMax, input.IsActive, input.PropertyTypeId, input.GovernorateId, input.PropertyFeatureId);
             var items = siteProperties.Select(item => new
             {
                 PropertyTitle = item.SiteProperty.PropertyTitle,
+                HotelName = item.SiteProperty.HotelName,
                 Bedrooms = item.SiteProperty.Bedrooms,
                 Bathrooms = item.SiteProperty.Bathrooms,
                 NumberOfBed = item.SiteProperty.NumberOfBed,
@@ -164,6 +192,7 @@ namespace AhlanFeekumPro.SiteProperties
                 IsActive = item.SiteProperty.IsActive,
 
                 PropertyType = item.PropertyType?.Title,
+                Governorate = item.Governorate?.Title,
 
             });
 
@@ -183,7 +212,7 @@ namespace AhlanFeekumPro.SiteProperties
         [Authorize(AhlanFeekumProPermissions.SiteProperties.Delete)]
         public virtual async Task DeleteAllAsync(GetSitePropertiesInput input)
         {
-            await _sitePropertyRepository.DeleteAllAsync(input.FilterText, input.PropertyTitle, input.BedroomsMin, input.BedroomsMax, input.BathroomsMin, input.BathroomsMax, input.NumberOfBedMin, input.NumberOfBedMax, input.FloorMin, input.FloorMax, input.MaximumNumberOfGuestMin, input.MaximumNumberOfGuestMax, input.LivingroomsMin, input.LivingroomsMax, input.PropertyDescription, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark, input.PricePerNightMin, input.PricePerNightMax, input.IsActive, input.PropertyTypeId, input.PropertyFeatureId);
+            await _sitePropertyRepository.DeleteAllAsync(input.FilterText, input.PropertyTitle, input.HotelName, input.BedroomsMin, input.BedroomsMax, input.BathroomsMin, input.BathroomsMax, input.NumberOfBedMin, input.NumberOfBedMax, input.FloorMin, input.FloorMax, input.MaximumNumberOfGuestMin, input.MaximumNumberOfGuestMax, input.LivingroomsMin, input.LivingroomsMax, input.PropertyDescription, input.HourseRules, input.ImportantInformation, input.Address, input.StreetAndBuildingNumber, input.LandMark, input.PricePerNightMin, input.PricePerNightMax, input.IsActive, input.PropertyTypeId, input.GovernorateId, input.PropertyFeatureId);
         }
         public virtual async Task<AhlanFeekumPro.Shared.DownloadTokenResultDto> GetDownloadTokenAsync()
         {

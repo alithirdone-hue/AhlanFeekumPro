@@ -1,3 +1,6 @@
+using AhlanFeekumPro.OnlyForYouSections;
+using AhlanFeekumPro.SpecialAdvertisments;
+using AhlanFeekumPro.Governorates;
 using AhlanFeekumPro.VerificationCodes;
 using AhlanFeekumPro.PropertyMedias;
 using AhlanFeekumPro.PropertyEvaluations;
@@ -75,6 +78,12 @@ public class AhlanFeekumProEntityFrameworkCoreModule : AbpModule
             options.AddRepository<PropertyMedia, PropertyMedias.EfCorePropertyMediaRepository>();
 
             options.AddRepository<VerificationCode, VerificationCodes.EfCoreVerificationCodeRepository>();
+
+            options.AddRepository<Governorate, Governorates.EfCoreGovernorateRepository>();
+
+            options.AddRepository<SpecialAdvertisment, SpecialAdvertisments.EfCoreSpecialAdvertismentRepository>();
+
+            options.AddRepository<OnlyForYouSection, OnlyForYouSections.EfCoreOnlyForYouSectionRepository>();
 
         });
 

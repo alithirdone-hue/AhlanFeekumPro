@@ -12,6 +12,7 @@ namespace AhlanFeekumPro.SiteProperties
         Task DeleteAllAsync(
             string? filterText = null,
             string? propertyTitle = null,
+            string? hotelName = null,
             int? bedroomsMin = null,
             int? bedroomsMax = null,
             int? bathroomsMin = null,
@@ -34,6 +35,7 @@ namespace AhlanFeekumPro.SiteProperties
             int? pricePerNightMax = null,
             bool? isActive = null,
             Guid? propertyTypeId = null,
+            Guid? governorateId = null,
             Guid? propertyFeatureId = null,
             CancellationToken cancellationToken = default);
         Task<SitePropertyWithNavigationProperties> GetWithNavigationPropertiesAsync(
@@ -44,6 +46,7 @@ namespace AhlanFeekumPro.SiteProperties
         Task<List<SitePropertyWithNavigationProperties>> GetListWithNavigationPropertiesAsync(
             string? filterText = null,
             string? propertyTitle = null,
+            string? hotelName = null,
             int? bedroomsMin = null,
             int? bedroomsMax = null,
             int? bathroomsMin = null,
@@ -66,6 +69,7 @@ namespace AhlanFeekumPro.SiteProperties
             int? pricePerNightMax = null,
             bool? isActive = null,
             Guid? propertyTypeId = null,
+            Guid? governorateId = null,
             Guid? propertyFeatureId = null,
             string? sorting = null,
             int maxResultCount = int.MaxValue,
@@ -76,6 +80,7 @@ namespace AhlanFeekumPro.SiteProperties
         Task<List<SiteProperty>> GetListAsync(
                     string? filterText = null,
                     string? propertyTitle = null,
+                    string? hotelName = null,
                     int? bedroomsMin = null,
                     int? bedroomsMax = null,
                     int? bathroomsMin = null,
@@ -106,6 +111,7 @@ namespace AhlanFeekumPro.SiteProperties
         Task<long> GetCountAsync(
             string? filterText = null,
             string? propertyTitle = null,
+            string? hotelName = null,
             int? bedroomsMin = null,
             int? bedroomsMax = null,
             int? bathroomsMin = null,
@@ -128,6 +134,7 @@ namespace AhlanFeekumPro.SiteProperties
             int? pricePerNightMax = null,
             bool? isActive = null,
             Guid? propertyTypeId = null,
+            Guid? governorateId = null,
             Guid? propertyFeatureId = null,
             CancellationToken cancellationToken = default);
     }

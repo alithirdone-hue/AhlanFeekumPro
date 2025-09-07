@@ -5,6 +5,7 @@ namespace AhlanFeekumPro.SiteProperties
     public abstract class SitePropertyExcelDtoBase
     {
         public string PropertyTitle { get; set; } = null!;
+        public string? HotelName { get; set; }
         public int Bedrooms { get; set; }
         public int Bathrooms { get; set; }
         public int NumberOfBed { get; set; }

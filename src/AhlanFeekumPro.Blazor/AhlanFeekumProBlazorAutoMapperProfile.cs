@@ -1,3 +1,6 @@
+using AhlanFeekumPro.OnlyForYouSections;
+using AhlanFeekumPro.SpecialAdvertisments;
+using AhlanFeekumPro.Governorates;
 using AhlanFeekumPro.VerificationCodes;
 using AhlanFeekumPro.PropertyMedias;
 using AhlanFeekumPro.PropertyEvaluations;
@@ -35,5 +38,11 @@ public class AhlanFeekumProBlazorAutoMapperProfile : Profile
         CreateMap<PropertyMediaDto, PropertyMediaUpdateDto>();
 
         CreateMap<VerificationCodeDto, VerificationCodeUpdateDto>();
+
+        CreateMap<GovernorateDto, GovernorateUpdateDto>();
+
+        CreateMap<SpecialAdvertismentDto, SpecialAdvertismentUpdateDto>();
+
+        CreateMap<OnlyForYouSectionDto, OnlyForYouSectionUpdateDto>();
     }
 }
