@@ -217,6 +217,15 @@ icon: "fa fa-file-alt",
                 icon: "fa fa-file-alt",
                 requiredPermissionName: AhlanFeekumProPermissions.OnlyForYouSections.Default)
         );
+
+        context.Menu.AddItem(
+            new ApplicationMenuItem(
+                AhlanFeekumProMenus.PropertyCalendars,
+                l["Menu:PropertyCalendars"],
+                url: "/property-calendars",
+                icon: "fa fa-file-alt",
+                requiredPermissionName: AhlanFeekumProPermissions.PropertyCalendars.Default)
+        );
         return Task.CompletedTask;
     }
 }

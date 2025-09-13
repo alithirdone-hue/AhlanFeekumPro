@@ -108,4 +108,12 @@ public static class AhlanFeekumProPermissions
         public const string Create = Default + ".Create";
         public const string Delete = Default + ".Delete";
     }
+
+    public static class PropertyCalendars
+    {
+        public const string Default = GroupName + ".PropertyCalendars";
+        public const string Edit = Default + ".Edit";
+        public const string Create = Default + ".Create";
+        public const string Delete = Default + ".Delete";
+    }
 }

@@ -191,6 +191,17 @@
     "ThirdPhoto": "Third Photo",
     "OnlyForYouSections": "Only For You Sections",
     "NewOnlyForYouSection": "New Only For You Section",
-    "Menu:OnlyForYouSections": "Only For You Sections"
+    "Menu:OnlyForYouSections": "Only For You Sections",
+    "Permission:PropertyCalendars": "Property Calendars",
+    "IsAvailable": "Is Available",
+    "Price": "Price",
+    "Note": "Note",
+    "PropertyCalendars": "Property Calendars",
+    "MinDate": "Min Date",
+    "MinPrice": "Min Price",
+    "MaxDate": "Max Date",
+    "MaxPrice": "Max Price",
+    "NewPropertyCalendar": "New Property Calendar",
+    "Menu:PropertyCalendars": "Property Calendars"
   }
 }

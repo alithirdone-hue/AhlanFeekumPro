@@ -1,3 +1,4 @@
+using AhlanFeekumPro.PropertyCalendars;
 using AhlanFeekumPro.OnlyForYouSections;
 using AhlanFeekumPro.SpecialAdvertisments;
 using AhlanFeekumPro.Governorates;
@@ -44,5 +45,7 @@ public class AhlanFeekumProBlazorAutoMapperProfile : Profile
         CreateMap<SpecialAdvertismentDto, SpecialAdvertismentUpdateDto>();
 
         CreateMap<OnlyForYouSectionDto, OnlyForYouSectionUpdateDto>();
+
+        CreateMap<PropertyCalendarDto, PropertyCalendarUpdateDto>();
     }
 }

@@ -1,3 +1,4 @@
+using AhlanFeekumPro.PropertyCalendars;
 using AhlanFeekumPro.OnlyForYouSections;
 using AhlanFeekumPro.SpecialAdvertisments;
 using AhlanFeekumPro.Governorates;
@@ -84,6 +85,8 @@ public class AhlanFeekumProEntityFrameworkCoreModule : AbpModule
             options.AddRepository<SpecialAdvertisment, SpecialAdvertisments.EfCoreSpecialAdvertismentRepository>();
 
             options.AddRepository<OnlyForYouSection, OnlyForYouSections.EfCoreOnlyForYouSectionRepository>();
+
+            options.AddRepository<PropertyCalendar, PropertyCalendars.EfCorePropertyCalendarRepository>();
 
         });
 

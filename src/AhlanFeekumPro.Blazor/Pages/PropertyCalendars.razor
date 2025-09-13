@@ -1,0 +1,482 @@
+
+
+@page "/property-calendars"
+
+@attribute [Authorize(AhlanFeekumProPermissions.PropertyCalendars.Default)]
+@using AhlanFeekumPro.PropertyCalendars
+@using AhlanFeekumPro.Localization
+@using AhlanFeekumPro.Shared
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.Extensions.Localization
+@using Microsoft.AspNetCore.Components.Web
+@using Blazorise
+@using Blazorise.Components
+@using Blazorise.DataGrid
+@using Volo.Abp.BlazoriseUI
+@using Volo.Abp.BlazoriseUI.Components
+@using Volo.Abp.ObjectMapping
+@using Volo.Abp.AspNetCore.Components.Messages
+@using Volo.Abp.AspNetCore.Components.Web.Theming.Layout
+
+@using AhlanFeekumPro.Permissions
+@using Volo.Abp.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components
+@using Volo.Abp.Http.Client
+@inherits AhlanFeekumProComponentBase
+@inject IPropertyCalendarsAppService PropertyCalendarsAppService
+
+@inject IUiMessageService UiMessageService
+@inject AbpBlazorMessageLocalizerHelper<AhlanFeekumProResource> LH
+@inject IRemoteServiceConfigurationProvider RemoteServiceConfigurationProvider
+@inject NavigationManager NavigationManager
+
+@* ************************* PAGE HEADER ************************* *@
+<PageHeader Title="@L["PropertyCalendars"]" BreadcrumbItems="BreadcrumbItems" Toolbar="Toolbar">
+
+</PageHeader>
+
+@* ************************* SEARCH ************************* *@
+<Card>
+    <CardBody>
+@*//<suite-custom-code-block-1>*@
+@*//</suite-custom-code-block-1>*@
+        <Row>
+            <div class="col-md-8 col-lg-10">
+                <div class="mb-3">
+                    <Form id="PropertyCalendarSearchForm">
+                        <Addons>
+                            <Addon AddonType="AddonType.Body">
+                                <TextEdit @bind-Text="@Filter.FilterText"
+                                        Autofocus="true"
+                                        Placeholder="@L["Search"]">
+                                </TextEdit>
+                            </Addon>
+                            <Addon AddonType="AddonType.End">
+                                <SubmitButton Form="PropertyCalendarSearchForm" Clicked="GetPropertyCalendarsAsync">
+                                    <Icon Name="IconName.Search" Class="me-1"></Icon>@L["Search"]
+                                </SubmitButton>
+                            </Addon>
+                        </Addons>
+                    </Form>
+                </div>
+            </div>
+                
+                   <div class="col-md-4 col-lg-2">
+            <div class="mb-3">
+               <Button Color="Color.Primary" Outline Style="width:100%" id="AdvancedFilterSectionToggler"
+                         Clicked="@(() => ShowAdvancedFilters = !ShowAdvancedFilters)">@L["Filters"]
+                         <i aria-hidden="true" class="fa ms-1 @(!ShowAdvancedFilters ? "fa-angle-down" : "fa-angle-up")"></i>
+               </Button>
+            </div>
+       </div>
+        
+        <div style="display: @(!ShowAdvancedFilters ? "none" : "block")"  class="mt-3">
+            <Row>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["MinDate"]</FieldLabel>
+                        <DateEdit TValue="DateOnly?"
+          Date="@Filter.DateMin"
+          DateChanged="@OnDateMinChangedAsync"
+          Placeholder="@string.Empty" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["MaxDate"]</FieldLabel>
+                        <DateEdit TValue="DateOnly?"
+          Date="@Filter.DateMax"
+          DateChanged="@OnDateMaxChangedAsync"
+          Placeholder="@string.Empty" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["IsAvailable"]</FieldLabel>
+                        <Select TValue="bool?"
+		SelectedValue="@Filter.IsAvailable"
+		SelectedValueChanged="@OnIsAvailableChangedAsync">
+
+<SelectItem></SelectItem>
+<SelectItem Value="true">@L["Yes"]</SelectItem>
+<SelectItem Value="false">@L["No"]</SelectItem>
+
+</Select>                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["MinPrice"]</FieldLabel>
+                        <NumericEdit TValue="float?" 
+             Value="@Filter.PriceMin"
+             ValueChanged="@OnPriceMinChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["MaxPrice"]</FieldLabel>
+                        <NumericEdit TValue="float?" 
+             Value="@Filter.PriceMax"
+             ValueChanged="@OnPriceMaxChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["Note"]</FieldLabel>
+                        <TextEdit Text="@Filter.Note" TextChanged="@OnNoteChangedAsync" />                       
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3">
+                    <Field>
+                        <FieldLabel>@L["SiteProperty"]</FieldLabel>
+                        <Select TValue="Guid?"
+		SelectedValue="@Filter.SitePropertyId"
+		SelectedValueChanged="@OnSitePropertyIdChangedAsync">
+
+<SelectItem></SelectItem>
+
+@foreach(var item in SitePropertiesCollection)
+{
+	<SelectItem TValue="Guid" Value="@item.Id">
+		@item.DisplayName
+	</SelectItem>
+}
+
+</Select>                       
+                    </Field>
+                </Column>
+            </Row>
+@*//<suite-custom-code-block-2>*@
+@*//</suite-custom-code-block-2>*@
+        </div>
+
+        </Row>
+
+@*//<suite-custom-code-block-3>*@
+@*//</suite-custom-code-block-3>*@
+    </CardBody>
+</Card>
+
+@* ************************* DATA GRID ************************* *@
+<Card>
+    <CardBody>        
+        @if (SelectedPropertyCalendars.Any())
+        {
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                @if (AllPropertyCalendarsSelected)
+                {
+                    <p class="lead mb-0">
+                        @L["AllItemsAreSelected", TotalCount]
+                    </p>
+                }
+                else
+                {
+                    <p class="lead mb-0">
+                        @if (SelectedPropertyCalendars.Count > 1)
+                        {
+                            @L["NumberOfItemsOnThisPageAreSelected", SelectedPropertyCalendars.Count]
+                        }
+                        else
+                        {
+                            @L["OneItemOnThisPageIsSelected"]
+                        }
+                    </p>
+                }
+                    
+                <div>
+                    @if ((SelectedPropertyCalendars.Count == PageSize || SelectedPropertyCalendars.Count == PropertyCalendarList.Count) && TotalCount > SelectedPropertyCalendars.Count)
+                    {
+                        if (!AllPropertyCalendarsSelected)
+                        {
+                            <Button Clicked="SelectAllItems" Class="mx-1 btn-outline-secondary">@L["SelectAllItems", TotalCount]</Button>
+                        }
+                        else
+                        {
+                            <Button Clicked="ClearSelection" Class="mx-1 btn-outline-secondary">@L["ClearSelection"]</Button>
+                        }
+                    }
+                    
+                    <Button Color="Color.Danger" Class="mx-1" Size="Size.Medium" Clicked="DeleteSelectedPropertyCalendarsAsync">
+                        <Icon Name="@IconName.Delete" /> @L["Delete"]
+                    </Button>
+                </div>
+            </div>
+            
+            <hr class="my-1 mx-0"/>
+        }
+        <DataGrid TItem="PropertyCalendarWithNavigationPropertiesDto"
+                  Data="PropertyCalendarList"
+                  
+                  SelectionMode="DataGridSelectionMode.Multiple"
+                  SelectedRows="SelectedPropertyCalendars"
+                  RowSelectable="@((args) => CanDeletePropertyCalendar)"
+                  SelectedRowsChanged="SelectedPropertyCalendarRowsChanged"
+                  
+                  
+                  
+                  ReadData="OnDataGridReadAsync"
+                  TotalItems="TotalCount"
+                  ShowPager="true"
+                  Responsive="true"
+                  PageSize="PageSize"
+                  Class="datagrid-detail">
+            <LoadingTemplate>
+                <Row Class="w-100 align-items-center" Style="height: 150px;">
+                    <Column>
+                       <RadarSpinner />
+                    </Column>
+                </Row>
+            </LoadingTemplate>
+            <EmptyTemplate>
+                <Row Class="w-100 align-items-center" Style="height: 150px;">
+                    <Column>
+                        <Heading Size="HeadingSize.Is4" TextAlignment="TextAlignment.Center">@L["NoDataAvailable"]</Heading>
+                    </Column>
+                </Row>
+            </EmptyTemplate>   
+            <DataGridColumns>
+                
+                @if (CanDeletePropertyCalendar && PropertyCalendarList.Any())
+                {
+                    <DataGridMultiSelectColumn TItem="PropertyCalendarWithNavigationPropertiesDto" DisplayOrder="-1" Width="30px"></DataGridMultiSelectColumn>
+                }
+                
+                <DataGridEntityActionsColumn TItem="PropertyCalendarWithNavigationPropertiesDto" @ref="@EntityActionsColumn">
+                    <DisplayTemplate>
+                        <EntityActions TItem="PropertyCalendarWithNavigationPropertiesDto" EntityActionsColumn="@EntityActionsColumn">
+                            <EntityAction TItem="PropertyCalendarWithNavigationPropertiesDto"
+                                          Visible="@CanEditPropertyCalendar"
+                                          Clicked="async () => await OpenEditPropertyCalendarModalAsync(context)"
+                                          Text="@L["Edit"]"></EntityAction>
+                            <EntityAction TItem="PropertyCalendarWithNavigationPropertiesDto"
+                                          Visible="@CanDeletePropertyCalendar"
+                                          Clicked="() => DeletePropertyCalendarAsync(context)"
+                                          ConfirmationMessage="@(()=> L["DeleteConfirmationMessage"])"
+                                          Text="@L["Delete"]"></EntityAction>
+@*//<suite-custom-code-block-4>*@
+@*//</suite-custom-code-block-4>*@
+                        </EntityActions>
+                    </DisplayTemplate>
+                </DataGridEntityActionsColumn>
+               
+              <DataGridColumn TItem="PropertyCalendarWithNavigationPropertiesDto"
+                      Field="PropertyCalendar.Date"
+                      Caption="@L["Date"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="PropertyCalendarWithNavigationPropertiesDto"
+                      Field="PropertyCalendar.IsAvailable"
+                      Caption="@L["IsAvailable"]">
+                    <DisplayTemplate>
+                        @if (context.PropertyCalendar.IsAvailable)
+                        {
+                            <Icon TextColor="TextColor.Success" Name="@IconName.Check" />
+                        }
+                        else
+                        {
+                            <Icon TextColor="TextColor.Danger" Name="@IconName.Times" />
+                        }
+                    </DisplayTemplate>
+              </DataGridColumn>
+
+
+              <DataGridColumn TItem="PropertyCalendarWithNavigationPropertiesDto"
+                      Field="PropertyCalendar.Price"
+                      Caption="@L["Price"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="PropertyCalendarWithNavigationPropertiesDto"
+                      Field="PropertyCalendar.Note"
+                      Caption="@L["Note"]">
+              </DataGridColumn>
+
+              <DataGridColumn TItem="PropertyCalendarWithNavigationPropertiesDto"
+                      Field="SiteProperty.PropertyTitle"
+                      Caption="@L["SiteProperty"]">
+              </DataGridColumn>
+
+            </DataGridColumns>
+            
+            
+        </DataGrid>
+    </CardBody>
+</Card>
+
+@* ************************* CREATE MODAL ************************* *@
+<Modal @ref="CreatePropertyCalendarModal" Closing="@CreatePropertyCalendarModal.CancelClosingModalWhenFocusLost">
+    <ModalContent Centered="true">
+@*//<suite-custom-code-block-5>*@
+@*//</suite-custom-code-block-5>*@
+        <Form id="CreatePropertyCalendarForm">
+            <ModalHeader>
+                <ModalTitle>@L["NewPropertyCalendar"]</ModalTitle>
+                <CloseButton Clicked="CloseCreatePropertyCalendarModalAsync" />
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="@NewPropertyCalendarValidations"
+                            Mode="ValidationMode.Auto"
+                            Model="@NewPropertyCalendar"
+                            ValidateOnLoad="false">
+                    
+                    
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Date"]</FieldLabel>
+                            <DateEdit TValue="DateOnly" InputMode="DateInputMode.Date" @bind-Date="@NewPropertyCalendar.Date" >
+                               <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </DateEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Field>
+                        <Check TValue="bool" @bind-Checked="@NewPropertyCalendar.IsAvailable" >@L["IsAvailable"]</Check>
+                    </Field>
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Price"]</FieldLabel>
+                            <NumericPicker TValue="float?" @bind-Value="@NewPropertyCalendar.Price"   >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                             </NumericPicker>
+                        </Field>
+                     </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Note"]</FieldLabel>
+                            <TextEdit @bind-Text="@NewPropertyCalendar.Note"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Field>
+                        <FieldLabel>@L["SiteProperty"]</FieldLabel>
+                        <Select TValue="Guid" @bind-SelectedValue="@NewPropertyCalendar.SitePropertyId">
+                            @foreach (var siteProperty in SitePropertiesCollection)
+                            {
+                                <SelectItem TValue="Guid" Value="@(siteProperty.Id)">
+                                    @(siteProperty.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    
+                    
+                </Validations>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary"
+                        Clicked="CloseCreatePropertyCalendarModalAsync">
+                    @L["Cancel"]
+                </Button>
+                <SubmitButton Form="CreatePropertyCalendarForm" Clicked="CreatePropertyCalendarAsync"/>
+@*//<suite-custom-code-block-6>*@
+@*//</suite-custom-code-block-6>*@
+            </ModalFooter>
+        </Form>
+@*//<suite-custom-code-block-7>*@
+@*//</suite-custom-code-block-7>*@
+    </ModalContent>
+</Modal>
+
+@* ************************* EDIT MODAL ************************* *@
+<Modal @ref="EditPropertyCalendarModal" Closing="@EditPropertyCalendarModal.CancelClosingModalWhenFocusLost">
+    <ModalContent Centered="true">
+@*//<suite-custom-code-block-8>*@
+@*//</suite-custom-code-block-8>*@
+        <Form id="EditPropertyCalendarForm">
+            <ModalHeader>
+                <ModalTitle>@L["Update"]</ModalTitle>
+                <CloseButton Clicked="CloseEditPropertyCalendarModalAsync" />
+            </ModalHeader>
+            <ModalBody>
+                <Validations @ref="@EditingPropertyCalendarValidations"
+                            Mode="ValidationMode.Auto"
+                            Model="@EditingPropertyCalendar"
+                            ValidateOnLoad="false">
+                    
+                    
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Date"]</FieldLabel>
+                            <DateEdit TValue="DateOnly" InputMode="DateInputMode.Date" @bind-Date="@EditingPropertyCalendar.Date" >
+                               <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </DateEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Field>
+                        <Check TValue="bool" @bind-Checked="@EditingPropertyCalendar.IsAvailable" >@L["IsAvailable"]</Check>
+                    </Field>
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Price"]</FieldLabel>
+                            <NumericPicker TValue="float?" @bind-Value="@EditingPropertyCalendar.Price"   >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                             </NumericPicker>
+                        </Field>
+                     </Validation>
+
+
+                    <Validation MessageLocalizer="@LH.Localize">
+                        <Field>
+                            <FieldLabel>@L["Note"]</FieldLabel>
+                            <TextEdit @bind-Text="@EditingPropertyCalendar.Note"  >
+                                <Feedback>
+                                    <ValidationError />
+                                </Feedback>
+                            </TextEdit>
+                        </Field>
+                    </Validation>
+
+
+                    <Field>
+                        <FieldLabel>@L["SiteProperty"]</FieldLabel>
+                        <Select TValue="Guid" @bind-SelectedValue="@EditingPropertyCalendar.SitePropertyId">
+                            @foreach (var siteProperty in SitePropertiesCollection)
+                            {
+                                <SelectItem TValue="Guid" Value="@(siteProperty.Id)">
+                                    @(siteProperty.DisplayName)
+                                </SelectItem>
+                            }
+                        </Select>
+                    </Field>
+
+
+                    
+                    
+                </Validations>
+            </ModalBody>
+            <ModalFooter>
+                <Button Color="Color.Secondary"
+                        Clicked="CloseEditPropertyCalendarModalAsync">
+                    @L["Cancel"]
+                </Button>
+                <SubmitButton Form="EditPropertyCalendarForm" Clicked="UpdatePropertyCalendarAsync" />
+@*//<suite-custom-code-block-9>*@
+@*//</suite-custom-code-block-9>*@
+            </ModalFooter>
+        </Form>
+@*//<suite-custom-code-block-10>*@
+@*//</suite-custom-code-block-10>*@
+    </ModalContent>
+</Modal>
+

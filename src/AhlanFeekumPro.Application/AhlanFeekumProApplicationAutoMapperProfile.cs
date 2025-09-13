@@ -1,3 +1,4 @@
+using AhlanFeekumPro.PropertyCalendars;
 using AhlanFeekumPro.OnlyForYouSections;
 using AhlanFeekumPro.SpecialAdvertisments;
 using AhlanFeekumPro.Governorates;
@@ -76,5 +77,9 @@ public class AhlanFeekumProApplicationAutoMapperProfile : Profile
 
         CreateMap<OnlyForYouSection, OnlyForYouSectionDto>();
         CreateMap<OnlyForYouSection, OnlyForYouSectionExcelDto>();
+
+        CreateMap<PropertyCalendar, PropertyCalendarDto>();
+        CreateMap<PropertyCalendar, PropertyCalendarExcelDto>();
+        CreateMap<PropertyCalendarWithNavigationProperties, PropertyCalendarWithNavigationPropertiesDto>();
     }
 }
