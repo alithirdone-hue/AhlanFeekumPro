@@ -20,15 +20,12 @@ namespace AhlanFeekumPro.OnlyForYouSections
         }
 
         public virtual async Task<OnlyForYouSection> CreateAsync(
-        string firstPhoto, string secondPhoto, string thirdPhoto)
+        Guid firstPhotoId, Guid secondPhotoId, Guid thirdPhotoId)
         {
-            Check.NotNullOrWhiteSpace(firstPhoto, nameof(firstPhoto));
-            Check.NotNullOrWhiteSpace(secondPhoto, nameof(secondPhoto));
-            Check.NotNullOrWhiteSpace(thirdPhoto, nameof(thirdPhoto));
 
             var onlyForYouSection = new OnlyForYouSection(
              GuidGenerator.Create(),
-             firstPhoto, secondPhoto, thirdPhoto
+             firstPhotoId, secondPhotoId, thirdPhotoId
              );
 
             return await _onlyForYouSectionRepository.InsertAsync(onlyForYouSection);
@@ -36,18 +33,15 @@ namespace AhlanFeekumPro.OnlyForYouSections
 
         public virtual async Task<OnlyForYouSection> UpdateAsync(
             Guid id,
-            string firstPhoto, string secondPhoto, string thirdPhoto, [CanBeNull] string? concurrencyStamp = null
+            Guid firstPhotoId, Guid secondPhotoId, Guid thirdPhotoId, [CanBeNull] string? concurrencyStamp = null
         )
         {
-            Check.NotNullOrWhiteSpace(firstPhoto, nameof(firstPhoto));
-            Check.NotNullOrWhiteSpace(secondPhoto, nameof(secondPhoto));
-            Check.NotNullOrWhiteSpace(thirdPhoto, nameof(thirdPhoto));
 
             var onlyForYouSection = await _onlyForYouSectionRepository.GetAsync(id);
 
-            onlyForYouSection.FirstPhoto = firstPhoto;
-            onlyForYouSection.SecondPhoto = secondPhoto;
-            onlyForYouSection.ThirdPhoto = thirdPhoto;
+            onlyForYouSection.FirstPhotoId = firstPhotoId;
+            onlyForYouSection.SecondPhotoId = secondPhotoId;
+            onlyForYouSection.ThirdPhotoId = thirdPhotoId;
 
             onlyForYouSection.SetConcurrencyStampIfNotNull(concurrencyStamp);
             return await _onlyForYouSectionRepository.UpdateAsync(onlyForYouSection);

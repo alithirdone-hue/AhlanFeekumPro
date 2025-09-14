@@ -26,10 +26,10 @@ namespace AhlanFeekumPro.Blazor.Pages
 {
     public partial class OnlyForYouSections
     {
-        
-        
+        [Inject]
+        protected IJSRuntime JsRuntime { get; set; }
             
-        
+        private IJSObjectReference? _jsObjectRef;
             
         protected List<Volo.Abp.BlazoriseUI.BreadcrumbItem> BreadcrumbItems = new List<Volo.Abp.BlazoriseUI.BreadcrumbItem>();
         protected PageToolbar Toolbar {get;} = new PageToolbar();
@@ -87,7 +87,7 @@ namespace AhlanFeekumPro.Blazor.Pages
         {
             if (firstRender)
             {
-                
+                _jsObjectRef = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "/Pages/OnlyForYouSections.razor.js");
                 await SetBreadcrumbItemsAsync();
                 await SetToolbarItemsAsync();
                 await InvokeAsync(StateHasChanged);
@@ -154,7 +154,7 @@ namespace AhlanFeekumPro.Blazor.Pages
                 culture = "&culture=" + culture;
             }
             await RemoteServiceConfigurationProvider.GetConfigurationOrDefaultOrNullAsync("Default");
-            NavigationManager.NavigateTo($"{remoteService?.BaseUrl.EnsureEndsWith('/') ?? string.Empty}api/app/only-for-you-sections/as-excel-file?DownloadToken={token}&FilterText={HttpUtility.UrlEncode(Filter.FilterText)}{culture}&FirstPhoto={HttpUtility.UrlEncode(Filter.FirstPhoto)}&SecondPhoto={HttpUtility.UrlEncode(Filter.SecondPhoto)}&ThirdPhoto={HttpUtility.UrlEncode(Filter.ThirdPhoto)}", forceLoad: true);
+            NavigationManager.NavigateTo($"{remoteService?.BaseUrl.EnsureEndsWith('/') ?? string.Empty}api/app/only-for-you-sections/as-excel-file?DownloadToken={token}&FilterText={HttpUtility.UrlEncode(Filter.FilterText)}{culture}", forceLoad: true);
         }
 
         private async Task OnDataGridReadAsync(DataGridReadDataEventArgs<OnlyForYouSectionDto> e)
@@ -177,7 +177,7 @@ namespace AhlanFeekumPro.Blazor.Pages
 
             SelectedCreateTab = "onlyForYouSection-create-tab";
             
-            
+            await _jsObjectRef!.InvokeVoidAsync("FileCleanup.clearInputFiles");
             await NewOnlyForYouSectionValidations.ClearAll();
             await CreateOnlyForYouSectionModal.Show();
         }
@@ -195,12 +195,15 @@ namespace AhlanFeekumPro.Blazor.Pages
         {
             SelectedEditTab = "onlyForYouSection-edit-tab";
             
-            
+            await _jsObjectRef!.InvokeVoidAsync("FileCleanup.clearInputFiles");
             var onlyForYouSection = await OnlyForYouSectionsAppService.GetAsync(input.Id);
             
             EditingOnlyForYouSectionId = onlyForYouSection.Id;
             EditingOnlyForYouSection = ObjectMapper.Map<OnlyForYouSectionDto, OnlyForYouSectionUpdateDto>(onlyForYouSection);
-            
+            HasSelectedOnlyForYouSectionFirstPhoto = EditingOnlyForYouSection.FirstPhotoId != null && EditingOnlyForYouSection.FirstPhotoId != Guid.Empty;
+HasSelectedOnlyForYouSectionSecondPhoto = EditingOnlyForYouSection.SecondPhotoId != null && EditingOnlyForYouSection.SecondPhotoId != Guid.Empty;
+HasSelectedOnlyForYouSectionThirdPhoto = EditingOnlyForYouSection.ThirdPhotoId != null && EditingOnlyForYouSection.ThirdPhotoId != Guid.Empty;
+
             await EditingOnlyForYouSectionValidations.ClearAll();
             await EditOnlyForYouSectionModal.Show();
         }
@@ -265,28 +268,185 @@ namespace AhlanFeekumPro.Blazor.Pages
         }
 
 
-
-
-
-
-
-
-
-        protected virtual async Task OnFirstPhotoChangedAsync(string? firstPhoto)
+        private bool IsCreateFormDisabled()
         {
-            Filter.FirstPhoto = firstPhoto;
-            await SearchAsync();
+            return OnNewOnlyForYouSectionFirstPhotoLoading ||NewOnlyForYouSection.FirstPhotoId == Guid.Empty ||OnNewOnlyForYouSectionSecondPhotoLoading ||NewOnlyForYouSection.SecondPhotoId == Guid.Empty ||OnNewOnlyForYouSectionThirdPhotoLoading ||NewOnlyForYouSection.ThirdPhotoId == Guid.Empty ;
         }
-        protected virtual async Task OnSecondPhotoChangedAsync(string? secondPhoto)
+        
+        private bool IsEditFormDisabled()
         {
-            Filter.SecondPhoto = secondPhoto;
-            await SearchAsync();
+            return OnEditOnlyForYouSectionFirstPhotoLoading ||EditingOnlyForYouSection.FirstPhotoId == Guid.Empty ||OnEditOnlyForYouSectionSecondPhotoLoading ||EditingOnlyForYouSection.SecondPhotoId == Guid.Empty ||OnEditOnlyForYouSectionThirdPhotoLoading ||EditingOnlyForYouSection.ThirdPhotoId == Guid.Empty ;
         }
-        protected virtual async Task OnThirdPhotoChangedAsync(string? thirdPhoto)
+
+
+
+        private int MaxOnlyForYouSectionFirstPhotoFileUploadSize = 1024 * 1024 * 10; //10MB
+        private bool OnNewOnlyForYouSectionFirstPhotoLoading = false;
+        private async Task OnNewOnlyForYouSectionFirstPhotoChanged(InputFileChangeEventArgs e)
         {
-            Filter.ThirdPhoto = thirdPhoto;
-            await SearchAsync();
+            try
+            {
+                if (e.FileCount is 0 or > 1 || e.File.Size > MaxOnlyForYouSectionFirstPhotoFileUploadSize)
+                {
+                    throw new UserFriendlyException(L["UploadFailedMessage"]);
+                }
+    
+                OnNewOnlyForYouSectionFirstPhotoLoading = true;
+                
+                var result = await UploadFileAsync(e.File!);
+    
+                NewOnlyForYouSection.FirstPhotoId = result.Id;
+                OnNewOnlyForYouSectionFirstPhotoLoading = false;            
+            }
+            catch(Exception ex)
+            {
+                await HandleErrorAsync(ex);
+            }
         }
+
+        private int MaxOnlyForYouSectionSecondPhotoFileUploadSize = 1024 * 1024 * 10; //10MB
+        private bool OnNewOnlyForYouSectionSecondPhotoLoading = false;
+        private async Task OnNewOnlyForYouSectionSecondPhotoChanged(InputFileChangeEventArgs e)
+        {
+            try
+            {
+                if (e.FileCount is 0 or > 1 || e.File.Size > MaxOnlyForYouSectionSecondPhotoFileUploadSize)
+                {
+                    throw new UserFriendlyException(L["UploadFailedMessage"]);
+                }
+    
+                OnNewOnlyForYouSectionSecondPhotoLoading = true;
+                
+                var result = await UploadFileAsync(e.File!);
+    
+                NewOnlyForYouSection.SecondPhotoId = result.Id;
+                OnNewOnlyForYouSectionSecondPhotoLoading = false;            
+            }
+            catch(Exception ex)
+            {
+                await HandleErrorAsync(ex);
+            }
+        }
+
+        private int MaxOnlyForYouSectionThirdPhotoFileUploadSize = 1024 * 1024 * 10; //10MB
+        private bool OnNewOnlyForYouSectionThirdPhotoLoading = false;
+        private async Task OnNewOnlyForYouSectionThirdPhotoChanged(InputFileChangeEventArgs e)
+        {
+            try
+            {
+                if (e.FileCount is 0 or > 1 || e.File.Size > MaxOnlyForYouSectionThirdPhotoFileUploadSize)
+                {
+                    throw new UserFriendlyException(L["UploadFailedMessage"]);
+                }
+    
+                OnNewOnlyForYouSectionThirdPhotoLoading = true;
+                
+                var result = await UploadFileAsync(e.File!);
+    
+                NewOnlyForYouSection.ThirdPhotoId = result.Id;
+                OnNewOnlyForYouSectionThirdPhotoLoading = false;            
+            }
+            catch(Exception ex)
+            {
+                await HandleErrorAsync(ex);
+            }
+        }
+        private bool HasSelectedOnlyForYouSectionFirstPhoto = false;
+        private bool OnEditOnlyForYouSectionFirstPhotoLoading = false;
+        private async Task OnEditOnlyForYouSectionFirstPhotoChanged(InputFileChangeEventArgs e)
+        {
+            try
+            {
+                if (e.FileCount is 0 or > 1 || e.File.Size > MaxOnlyForYouSectionFirstPhotoFileUploadSize)
+                {
+                    throw new UserFriendlyException(L["UploadFailedMessage"]);
+                }
+    
+                OnEditOnlyForYouSectionFirstPhotoLoading = true;
+                
+                var result = await UploadFileAsync(e.File!);
+    
+                EditingOnlyForYouSection.FirstPhotoId = result.Id;
+                OnEditOnlyForYouSectionFirstPhotoLoading = false;            
+            }
+            catch(Exception ex)
+            {
+                await HandleErrorAsync(ex);
+            }            
+        }
+
+        private bool HasSelectedOnlyForYouSectionSecondPhoto = false;
+        private bool OnEditOnlyForYouSectionSecondPhotoLoading = false;
+        private async Task OnEditOnlyForYouSectionSecondPhotoChanged(InputFileChangeEventArgs e)
+        {
+            try
+            {
+                if (e.FileCount is 0 or > 1 || e.File.Size > MaxOnlyForYouSectionSecondPhotoFileUploadSize)
+                {
+                    throw new UserFriendlyException(L["UploadFailedMessage"]);
+                }
+    
+                OnEditOnlyForYouSectionSecondPhotoLoading = true;
+                
+                var result = await UploadFileAsync(e.File!);
+    
+                EditingOnlyForYouSection.SecondPhotoId = result.Id;
+                OnEditOnlyForYouSectionSecondPhotoLoading = false;            
+            }
+            catch(Exception ex)
+            {
+                await HandleErrorAsync(ex);
+            }            
+        }
+
+        private bool HasSelectedOnlyForYouSectionThirdPhoto = false;
+        private bool OnEditOnlyForYouSectionThirdPhotoLoading = false;
+        private async Task OnEditOnlyForYouSectionThirdPhotoChanged(InputFileChangeEventArgs e)
+        {
+            try
+            {
+                if (e.FileCount is 0 or > 1 || e.File.Size > MaxOnlyForYouSectionThirdPhotoFileUploadSize)
+                {
+                    throw new UserFriendlyException(L["UploadFailedMessage"]);
+                }
+    
+                OnEditOnlyForYouSectionThirdPhotoLoading = true;
+                
+                var result = await UploadFileAsync(e.File!);
+    
+                EditingOnlyForYouSection.ThirdPhotoId = result.Id;
+                OnEditOnlyForYouSectionThirdPhotoLoading = false;            
+            }
+            catch(Exception ex)
+            {
+                await HandleErrorAsync(ex);
+            }            
+        }
+
+
+
+
+        private async Task<AppFileDescriptorDto> UploadFileAsync(IBrowserFile file)
+        {
+            using (var ms = new MemoryStream())
+            {
+                await file.OpenReadStream(long.MaxValue).CopyToAsync(ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                
+                return await OnlyForYouSectionsAppService.UploadFileAsync(new RemoteStreamContent(ms, file.Name, file.ContentType));
+            }
+        }
+
+
+
+        private async Task DownloadFileAsync(Guid fileId)
+        {
+            var token = (await OnlyForYouSectionsAppService.GetDownloadTokenAsync()).Token;
+            var remoteService = await RemoteServiceConfigurationProvider.GetConfigurationOrDefaultOrNullAsync("AhlanFeekumPro") ?? await RemoteServiceConfigurationProvider.GetConfigurationOrDefaultOrNullAsync("Default");
+            NavigationManager.NavigateTo($"{remoteService?.BaseUrl.EnsureEndsWith('/') ?? string.Empty}api/app/only-for-you-sections/file?DownloadToken={token}&FileId={fileId}", forceLoad: true);
+        }
+
+
         
 
 

@@ -42,6 +42,7 @@ public class AhlanFeekumProDbContext :
     IIdentityProDbContext,
     ISaasDbContext
 {
+    public DbSet<AppFileDescriptors.AppFileDescriptor> AppFileDescriptors { get; set; } = null!;
     public DbSet<PropertyCalendar> PropertyCalendars { get; set; } = null!;
     public DbSet<OnlyForYouSection> OnlyForYouSections { get; set; } = null!;
     public DbSet<SpecialAdvertisment> SpecialAdvertisments { get; set; } = null!;
@@ -300,27 +301,10 @@ public class AhlanFeekumProDbContext :
         }
         if (builder.IsHostDatabase())
         {
-            builder.Entity<SpecialAdvertisment>(b =>
-            {
-                b.ToTable(AhlanFeekumProConsts.DbTablePrefix + "SpecialAdvertisments", AhlanFeekumProConsts.DbSchema);
-                b.ConfigureByConvention();
-                b.Property(x => x.Image).HasColumnName(nameof(SpecialAdvertisment.Image)).IsRequired();
-                b.Property(x => x.Order).HasColumnName(nameof(SpecialAdvertisment.Order));
-                b.Property(x => x.IsActive).HasColumnName(nameof(SpecialAdvertisment.IsActive));
-                b.HasOne<SiteProperty>().WithMany().IsRequired().HasForeignKey(x => x.SitePropertyId).OnDelete(DeleteBehavior.NoAction);
-            });
 
         }
         if (builder.IsHostDatabase())
         {
-            builder.Entity<OnlyForYouSection>(b =>
-            {
-                b.ToTable(AhlanFeekumProConsts.DbTablePrefix + "OnlyForYouSections", AhlanFeekumProConsts.DbSchema);
-                b.ConfigureByConvention();
-                b.Property(x => x.FirstPhoto).HasColumnName(nameof(OnlyForYouSection.FirstPhoto)).IsRequired();
-                b.Property(x => x.SecondPhoto).HasColumnName(nameof(OnlyForYouSection.SecondPhoto)).IsRequired();
-                b.Property(x => x.ThirdPhoto).HasColumnName(nameof(OnlyForYouSection.ThirdPhoto)).IsRequired();
-            });
 
         }
         if (builder.IsHostDatabase())
@@ -349,5 +333,54 @@ public class AhlanFeekumProDbContext :
             });
 
         }
+        if (builder.IsHostDatabase())
+        {
+            builder.Entity<SpecialAdvertisment>(b =>
+            {
+                b.ToTable(AhlanFeekumProConsts.DbTablePrefix + "SpecialAdvertisments", AhlanFeekumProConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.ImageId).HasColumnName(nameof(SpecialAdvertisment.ImageId));
+                b.Property(x => x.Order).HasColumnName(nameof(SpecialAdvertisment.Order));
+                b.Property(x => x.IsActive).HasColumnName(nameof(SpecialAdvertisment.IsActive));
+                b.HasOne<SiteProperty>().WithMany().IsRequired().HasForeignKey(x => x.SitePropertyId).OnDelete(DeleteBehavior.NoAction);
+            });
+
+        }
+
+        if (builder.IsHostDatabase())
+        {
+
+        }
+
+        if (builder.IsHostDatabase())
+        {
+
+        }
+
+        if (builder.IsHostDatabase())
+        {
+
+        }
+
+        if (builder.IsHostDatabase())
+        {
+            builder.Entity<OnlyForYouSection>(b =>
+            {
+                b.ToTable(AhlanFeekumProConsts.DbTablePrefix + "OnlyForYouSections", AhlanFeekumProConsts.DbSchema);
+                b.ConfigureByConvention();
+                b.Property(x => x.FirstPhotoId).HasColumnName(nameof(OnlyForYouSection.FirstPhotoId));
+                b.Property(x => x.SecondPhotoId).HasColumnName(nameof(OnlyForYouSection.SecondPhotoId));
+                b.Property(x => x.ThirdPhotoId).HasColumnName(nameof(OnlyForYouSection.ThirdPhotoId));
+            });
+
+        }
+
+        builder.Entity<AppFileDescriptors.AppFileDescriptor>(b =>
+                    {
+                        b.ToTable(AhlanFeekumProConsts.DbTablePrefix + "FileDescriptors", AhlanFeekumProConsts.DbSchema);
+                        b.ConfigureByConvention();
+                        b.Property(x => x.Name);
+                        b.Property(x => x.MimeType);
+                    });
     }
 }

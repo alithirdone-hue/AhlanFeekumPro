@@ -214,7 +214,7 @@ icon: "fa fa-file-alt",
                 AhlanFeekumProMenus.OnlyForYouSections,
                 l["Menu:OnlyForYouSections"],
                 url: "/only-for-you-sections",
-                icon: "fa fa-file-alt",
+icon: "fa fa-file-alt",
                 requiredPermissionName: AhlanFeekumProPermissions.OnlyForYouSections.Default)
         );
 

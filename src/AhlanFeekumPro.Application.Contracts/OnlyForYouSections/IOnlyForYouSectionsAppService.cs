@@ -10,6 +10,9 @@ namespace AhlanFeekumPro.OnlyForYouSections
 {
     public partial interface IOnlyForYouSectionsAppService : IApplicationService
     {
+        Task<IRemoteStreamContent> GetFileAsync(GetFileInput input);
+
+        Task<AppFileDescriptorDto> UploadFileAsync(IRemoteStreamContent input);
 
         Task<PagedResultDto<OnlyForYouSectionDto>> GetListAsync(GetOnlyForYouSectionsInput input);
 

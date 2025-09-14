@@ -6,11 +6,8 @@ namespace AhlanFeekumPro.OnlyForYouSections
 {
     public abstract class OnlyForYouSectionCreateDtoBase
     {
-        [Required]
-        public string FirstPhoto { get; set; } = null!;
-        [Required]
-        public string SecondPhoto { get; set; } = null!;
-        [Required]
-        public string ThirdPhoto { get; set; } = null!;
+        public Guid FirstPhotoId { get; set; }
+        public Guid SecondPhotoId { get; set; }
+        public Guid ThirdPhotoId { get; set; }
     }
 }

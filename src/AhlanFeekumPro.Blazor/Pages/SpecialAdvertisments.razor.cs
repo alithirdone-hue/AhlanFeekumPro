@@ -26,10 +26,10 @@ namespace AhlanFeekumPro.Blazor.Pages
 {
     public partial class SpecialAdvertisments
     {
-        
-        
+        [Inject]
+        protected IJSRuntime JsRuntime { get; set; }
             
-        
+        private IJSObjectReference? _jsObjectRef;
             
         protected List<Volo.Abp.BlazoriseUI.BreadcrumbItem> BreadcrumbItems = new List<Volo.Abp.BlazoriseUI.BreadcrumbItem>();
         protected PageToolbar Toolbar {get;} = new PageToolbar();
@@ -91,7 +91,7 @@ namespace AhlanFeekumPro.Blazor.Pages
         {
             if (firstRender)
             {
-                
+                _jsObjectRef = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "/Pages/SpecialAdvertisments.razor.js");
                 await SetBreadcrumbItemsAsync();
                 await SetToolbarItemsAsync();
                 await InvokeAsync(StateHasChanged);
@@ -158,7 +158,7 @@ namespace AhlanFeekumPro.Blazor.Pages
                 culture = "&culture=" + culture;
             }
             await RemoteServiceConfigurationProvider.GetConfigurationOrDefaultOrNullAsync("Default");
-            NavigationManager.NavigateTo($"{remoteService?.BaseUrl.EnsureEndsWith('/') ?? string.Empty}api/app/special-advertisments/as-excel-file?DownloadToken={token}&FilterText={HttpUtility.UrlEncode(Filter.FilterText)}{culture}&Image={HttpUtility.UrlEncode(Filter.Image)}&OrderMin={Filter.OrderMin}&OrderMax={Filter.OrderMax}&IsActive={Filter.IsActive}&SitePropertyId={Filter.SitePropertyId}", forceLoad: true);
+            NavigationManager.NavigateTo($"{remoteService?.BaseUrl.EnsureEndsWith('/') ?? string.Empty}api/app/special-advertisments/as-excel-file?DownloadToken={token}&FilterText={HttpUtility.UrlEncode(Filter.FilterText)}{culture}&OrderMin={Filter.OrderMin}&OrderMax={Filter.OrderMax}&IsActive={Filter.IsActive}&SitePropertyId={Filter.SitePropertyId}", forceLoad: true);
         }
 
         private async Task OnDataGridReadAsync(DataGridReadDataEventArgs<SpecialAdvertismentWithNavigationPropertiesDto> e)
@@ -182,7 +182,7 @@ namespace AhlanFeekumPro.Blazor.Pages
 
             SelectedCreateTab = "specialAdvertisment-create-tab";
             
-            
+            await _jsObjectRef!.InvokeVoidAsync("FileCleanup.clearInputFiles");
             await NewSpecialAdvertismentValidations.ClearAll();
             await CreateSpecialAdvertismentModal.Show();
         }
@@ -201,12 +201,13 @@ namespace AhlanFeekumPro.Blazor.Pages
         {
             SelectedEditTab = "specialAdvertisment-edit-tab";
             
-            
+            await _jsObjectRef!.InvokeVoidAsync("FileCleanup.clearInputFiles");
             var specialAdvertisment = await SpecialAdvertismentsAppService.GetWithNavigationPropertiesAsync(input.SpecialAdvertisment.Id);
             
             EditingSpecialAdvertismentId = specialAdvertisment.SpecialAdvertisment.Id;
             EditingSpecialAdvertisment = ObjectMapper.Map<SpecialAdvertismentDto, SpecialAdvertismentUpdateDto>(specialAdvertisment.SpecialAdvertisment);
-            
+            HasSelectedSpecialAdvertismentImage = EditingSpecialAdvertisment.ImageId != null && EditingSpecialAdvertisment.ImageId != Guid.Empty;
+
             await EditingSpecialAdvertismentValidations.ClearAll();
             await EditSpecialAdvertismentModal.Show();
         }
@@ -271,18 +272,88 @@ namespace AhlanFeekumPro.Blazor.Pages
         }
 
 
-
-
-
-
-
-
-
-        protected virtual async Task OnImageChangedAsync(string? image)
+        private bool IsCreateFormDisabled()
         {
-            Filter.Image = image;
-            await SearchAsync();
+            return OnNewSpecialAdvertismentImageLoading ||NewSpecialAdvertisment.ImageId == Guid.Empty ;
         }
+        
+        private bool IsEditFormDisabled()
+        {
+            return OnEditSpecialAdvertismentImageLoading ||EditingSpecialAdvertisment.ImageId == Guid.Empty ;
+        }
+
+
+
+        private int MaxSpecialAdvertismentImageFileUploadSize = 1024 * 1024 * 10; //10MB
+        private bool OnNewSpecialAdvertismentImageLoading = false;
+        private async Task OnNewSpecialAdvertismentImageChanged(InputFileChangeEventArgs e)
+        {
+            try
+            {
+                if (e.FileCount is 0 or > 1 || e.File.Size > MaxSpecialAdvertismentImageFileUploadSize)
+                {
+                    throw new UserFriendlyException(L["UploadFailedMessage"]);
+                }
+    
+                OnNewSpecialAdvertismentImageLoading = true;
+                
+                var result = await UploadFileAsync(e.File!);
+    
+                NewSpecialAdvertisment.ImageId = result.Id;
+                OnNewSpecialAdvertismentImageLoading = false;            
+            }
+            catch(Exception ex)
+            {
+                await HandleErrorAsync(ex);
+            }
+        }
+        private bool HasSelectedSpecialAdvertismentImage = false;
+        private bool OnEditSpecialAdvertismentImageLoading = false;
+        private async Task OnEditSpecialAdvertismentImageChanged(InputFileChangeEventArgs e)
+        {
+            try
+            {
+                if (e.FileCount is 0 or > 1 || e.File.Size > MaxSpecialAdvertismentImageFileUploadSize)
+                {
+                    throw new UserFriendlyException(L["UploadFailedMessage"]);
+                }
+    
+                OnEditSpecialAdvertismentImageLoading = true;
+                
+                var result = await UploadFileAsync(e.File!);
+    
+                EditingSpecialAdvertisment.ImageId = result.Id;
+                OnEditSpecialAdvertismentImageLoading = false;            
+            }
+            catch(Exception ex)
+            {
+                await HandleErrorAsync(ex);
+            }            
+        }
+
+
+
+
+        private async Task<AppFileDescriptorDto> UploadFileAsync(IBrowserFile file)
+        {
+            using (var ms = new MemoryStream())
+            {
+                await file.OpenReadStream(long.MaxValue).CopyToAsync(ms);
+                ms.Seek(0, SeekOrigin.Begin);
+                
+                return await SpecialAdvertismentsAppService.UploadFileAsync(new RemoteStreamContent(ms, file.Name, file.ContentType));
+            }
+        }
+
+
+
+        private async Task DownloadFileAsync(Guid fileId)
+        {
+            var token = (await SpecialAdvertismentsAppService.GetDownloadTokenAsync()).Token;
+            var remoteService = await RemoteServiceConfigurationProvider.GetConfigurationOrDefaultOrNullAsync("AhlanFeekumPro") ?? await RemoteServiceConfigurationProvider.GetConfigurationOrDefaultOrNullAsync("Default");
+            NavigationManager.NavigateTo($"{remoteService?.BaseUrl.EnsureEndsWith('/') ?? string.Empty}api/app/special-advertisments/file?DownloadToken={token}&FileId={fileId}", forceLoad: true);
+        }
+
         protected virtual async Task OnOrderMinChangedAsync(int? orderMin)
         {
             Filter.OrderMin = orderMin;

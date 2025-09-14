@@ -13,30 +13,24 @@ namespace AhlanFeekumPro.OnlyForYouSections
 {
     public abstract class OnlyForYouSectionBase : FullAuditedAggregateRoot<Guid>
     {
-        [NotNull]
-        public virtual string FirstPhoto { get; set; }
+        public virtual Guid FirstPhotoId { get; set; }
 
-        [NotNull]
-        public virtual string SecondPhoto { get; set; }
+        public virtual Guid SecondPhotoId { get; set; }
 
-        [NotNull]
-        public virtual string ThirdPhoto { get; set; }
+        public virtual Guid ThirdPhotoId { get; set; }
 
         protected OnlyForYouSectionBase()
         {
 
         }
 
-        public OnlyForYouSectionBase(Guid id, string firstPhoto, string secondPhoto, string thirdPhoto)
+        public OnlyForYouSectionBase(Guid id, Guid firstPhotoId, Guid secondPhotoId, Guid thirdPhotoId)
         {
 
             Id = id;
-            Check.NotNull(firstPhoto, nameof(firstPhoto));
-            Check.NotNull(secondPhoto, nameof(secondPhoto));
-            Check.NotNull(thirdPhoto, nameof(thirdPhoto));
-            FirstPhoto = firstPhoto;
-            SecondPhoto = secondPhoto;
-            ThirdPhoto = thirdPhoto;
+            FirstPhotoId = firstPhotoId;
+            SecondPhotoId = secondPhotoId;
+            ThirdPhotoId = thirdPhotoId;
         }
 
     }

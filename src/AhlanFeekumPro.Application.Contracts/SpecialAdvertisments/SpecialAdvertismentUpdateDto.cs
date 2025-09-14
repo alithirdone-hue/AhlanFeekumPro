@@ -7,8 +7,7 @@ namespace AhlanFeekumPro.SpecialAdvertisments
 {
     public abstract class SpecialAdvertismentUpdateDtoBase : IHasConcurrencyStamp
     {
-        [Required]
-        public string Image { get; set; } = null!;
+        public Guid ImageId { get; set; }
         public int Order { get; set; }
         public bool IsActive { get; set; }
         public Guid SitePropertyId { get; set; }

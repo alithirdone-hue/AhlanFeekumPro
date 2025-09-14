@@ -74,12 +74,6 @@
             <Row>
                 <Column ColumnSize="ColumnSize.Is3">
                     <Field>
-                        <FieldLabel>@L["Image"]</FieldLabel>
-                        <TextEdit Text="@Filter.Image" TextChanged="@OnImageChangedAsync" />                       
-                    </Field>
-                </Column>
-                <Column ColumnSize="ColumnSize.Is3">
-                    <Field>
                         <FieldLabel>@L["MinOrder"]</FieldLabel>
                         <NumericEdit TValue="int?" 
              Value="@Filter.OrderMin"
@@ -242,8 +236,18 @@
                 </DataGridEntityActionsColumn>
                
               <DataGridColumn TItem="SpecialAdvertismentWithNavigationPropertiesDto"
-                      Field="SpecialAdvertisment.Image"
+                      Field="SpecialAdvertisment.ImageId"
                       Caption="@L["Image"]">
+                      <DisplayTemplate>
+                        @if (context.SpecialAdvertisment.ImageId != null && context.SpecialAdvertisment.ImageId != Guid.Empty)
+                        {   
+                            <Icon Name="IconName.FileAlt" Clicked="async () => await DownloadFileAsync(context.SpecialAdvertisment.ImageId)" />
+                        }
+                        else
+                        {
+                            <span>"-"</span>
+                        }
+                      </DisplayTemplate>
               </DataGridColumn>
 
               <DataGridColumn TItem="SpecialAdvertismentWithNavigationPropertiesDto"
@@ -296,16 +300,15 @@
                             ValidateOnLoad="false">
                     
                     
-                    <Validation MessageLocalizer="@LH.Localize">
                         <Field>
                             <FieldLabel>@L["Image"] *</FieldLabel>
-                            <TextEdit @bind-Text="@NewSpecialAdvertisment.Image"  >
-                                <Feedback>
-                                    <ValidationError />
-                                </Feedback>
-                            </TextEdit>
+                            <InputFile class="form-control file-input" OnChange="@OnNewSpecialAdvertismentImageChanged" required/>
+                            @if (OnNewSpecialAdvertismentImageLoading)
+                            {
+                                <p>@L["FileUploading"]</p>
+                            }
+                            <p class="text-muted pt-1"><i class="fa fa-info-circle"></i> @L["MaxFileSizeLimit", 10]</p>
                         </Field>
-                    </Validation>
 
 
                     <Validation MessageLocalizer="@LH.Localize">
@@ -346,7 +349,7 @@
                         Clicked="CloseCreateSpecialAdvertismentModalAsync">
                     @L["Cancel"]
                 </Button>
-                <SubmitButton Form="CreateSpecialAdvertismentForm" Clicked="CreateSpecialAdvertismentAsync"/>
+                <SubmitButton Form="CreateSpecialAdvertismentForm" Clicked="CreateSpecialAdvertismentAsync" Disabled="@IsCreateFormDisabled()"/>
 @*//<suite-custom-code-block-6>*@
 @*//</suite-custom-code-block-6>*@
             </ModalFooter>
@@ -373,17 +376,29 @@
                             ValidateOnLoad="false">
                     
                     
-                    <Validation MessageLocalizer="@LH.Localize">
-                        <Field>
-                            <FieldLabel>@L["Image"] *</FieldLabel>
-                            <TextEdit @bind-Text="@EditingSpecialAdvertisment.Image"  >
-                                <Feedback>
-                                    <ValidationError />
-                                </Feedback>
-                            </TextEdit>
-                        </Field>
-                    </Validation>
-
+                    <Field>
+                        <FieldLabel>@L["Image"] *</FieldLabel>
+                        @if (HasSelectedSpecialAdvertismentImage)
+                        {
+                            <div class="mb-2">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="@L["DownloadSelectedFile"].Value" @onclick="@(async () => await DownloadFileAsync(EditingSpecialAdvertisment.ImageId))"><i class="fa fa-file-alt"></i></button>
+                                    <button type="button" class="btn btn-primary btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="@L["RemoveSelectedFile"].Value" @onclick="(() => { EditingSpecialAdvertisment.ImageId = Guid.Empty; HasSelectedSpecialAdvertismentImage = false; })"><i class="fa fa-trash"></i></button>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <Field>
+                                <InputFile class="form-control file-input" OnChange="@OnEditSpecialAdvertismentImageChanged" required/>
+                                @if (OnEditSpecialAdvertismentImageLoading)
+                                {
+                                    <p>@L["FileUploading"]</p>
+                                }
+                                <p class="text-muted pt-1"><i class="fa fa-info-circle"></i> @L["MaxFileSizeLimit", 10]</p>
+                            </Field>
+                        }
+                    </Field>
 
                     <Validation MessageLocalizer="@LH.Localize">
                         <Field>
@@ -423,7 +438,7 @@
                         Clicked="CloseEditSpecialAdvertismentModalAsync">
                     @L["Cancel"]
                 </Button>
-                <SubmitButton Form="EditSpecialAdvertismentForm" Clicked="UpdateSpecialAdvertismentAsync" />
+                <SubmitButton Form="EditSpecialAdvertismentForm" Clicked="UpdateSpecialAdvertismentAsync" Disabled="@IsEditFormDisabled()" />
 @*//<suite-custom-code-block-9>*@
 @*//</suite-custom-code-block-9>*@
             </ModalFooter>

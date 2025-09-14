@@ -6,8 +6,7 @@ namespace AhlanFeekumPro.SpecialAdvertisments
 {
     public abstract class SpecialAdvertismentCreateDtoBase
     {
-        [Required]
-        public string Image { get; set; } = null!;
+        public Guid ImageId { get; set; }
         public int Order { get; set; }
         public bool IsActive { get; set; } = true;
         public Guid SitePropertyId { get; set; }

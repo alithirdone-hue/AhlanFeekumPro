@@ -26,14 +26,14 @@
     {
       "Id": "f2d291ae-ef28-4ead-b526-592f5098e50d",
       "Name": "Image",
-      "Type": "string",
+      "Type": "File",
       "EnumType": "",
       "EnumNamespace": "",
       "EnumAngularImport": "shared/enums",
       "EnumFilePath": null,
       "DefaultValue": null,
       "IsNullable": false,
-      "IsRequired": true,
+      "IsRequired": false,
       "IsFilterable": true,
       "AllowEmptyStrings": false,
       "IsTextArea": false,
@@ -49,7 +49,7 @@
       "ReadonlyOnEditModal": false,
       "EnumValues": null,
       "IsSelected": true,
-      "MaxFileSize": null,
+      "MaxFileSize": 10,
       "OrdinalIndex": 0
     },
     {

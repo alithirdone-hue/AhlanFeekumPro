@@ -17,6 +17,7 @@ using Volo.Abp.Authorization;
 using Volo.Abp.Caching;
 using Microsoft.Extensions.Caching.Distributed;
 using AhlanFeekumPro.Shared;
+using Volo.Abp.BlobStoring;
 
 namespace AhlanFeekumPro.OnlyForYouSections
 {
@@ -27,19 +28,22 @@ namespace AhlanFeekumPro.OnlyForYouSections
         protected IDistributedCache<OnlyForYouSectionDownloadTokenCacheItem, string> _downloadTokenCache;
         protected IOnlyForYouSectionRepository _onlyForYouSectionRepository;
         protected OnlyForYouSectionManager _onlyForYouSectionManager;
+        protected IRepository<AppFileDescriptors.AppFileDescriptor, Guid> _appFileDescriptorRepository;
+        protected IBlobContainer<OnlyForYouSectionFileContainer> _blobContainer;
 
-        public OnlyForYouSectionsAppServiceBase(IOnlyForYouSectionRepository onlyForYouSectionRepository, OnlyForYouSectionManager onlyForYouSectionManager, IDistributedCache<OnlyForYouSectionDownloadTokenCacheItem, string> downloadTokenCache)
+        public OnlyForYouSectionsAppServiceBase(IOnlyForYouSectionRepository onlyForYouSectionRepository, OnlyForYouSectionManager onlyForYouSectionManager, IDistributedCache<OnlyForYouSectionDownloadTokenCacheItem, string> downloadTokenCache, IRepository<AppFileDescriptors.AppFileDescriptor, Guid> appFileDescriptorRepository, IBlobContainer<OnlyForYouSectionFileContainer> blobContainer)
         {
             _downloadTokenCache = downloadTokenCache;
             _onlyForYouSectionRepository = onlyForYouSectionRepository;
             _onlyForYouSectionManager = onlyForYouSectionManager;
-
+            _appFileDescriptorRepository = appFileDescriptorRepository;
+            _blobContainer = blobContainer;
         }
 
         public virtual async Task<PagedResultDto<OnlyForYouSectionDto>> GetListAsync(GetOnlyForYouSectionsInput input)
         {
-            var totalCount = await _onlyForYouSectionRepository.GetCountAsync(input.FilterText, input.FirstPhoto, input.SecondPhoto, input.ThirdPhoto);
-            var items = await _onlyForYouSectionRepository.GetListAsync(input.FilterText, input.FirstPhoto, input.SecondPhoto, input.ThirdPhoto, input.Sorting, input.MaxResultCount, input.SkipCount);
+            var totalCount = await _onlyForYouSectionRepository.GetCountAsync(input.FilterText);
+            var items = await _onlyForYouSectionRepository.GetListAsync(input.FilterText, input.Sorting, input.MaxResultCount, input.SkipCount);
 
             return new PagedResultDto<OnlyForYouSectionDto>
             {
@@ -64,7 +68,7 @@ namespace AhlanFeekumPro.OnlyForYouSections
         {
 
             var onlyForYouSection = await _onlyForYouSectionManager.CreateAsync(
-            input.FirstPhoto, input.SecondPhoto, input.ThirdPhoto
+            input.FirstPhotoId, input.SecondPhotoId, input.ThirdPhotoId
             );
 
             return ObjectMapper.Map<OnlyForYouSection, OnlyForYouSectionDto>(onlyForYouSection);
@@ -76,7 +80,7 @@ namespace AhlanFeekumPro.OnlyForYouSections
 
             var onlyForYouSection = await _onlyForYouSectionManager.UpdateAsync(
             id,
-            input.FirstPhoto, input.SecondPhoto, input.ThirdPhoto, input.ConcurrencyStamp
+            input.FirstPhotoId, input.SecondPhotoId, input.ThirdPhotoId, input.ConcurrencyStamp
             );
 
             return ObjectMapper.Map<OnlyForYouSection, OnlyForYouSectionDto>(onlyForYouSection);
@@ -91,7 +95,7 @@ namespace AhlanFeekumPro.OnlyForYouSections
                 throw new AbpAuthorizationException("Invalid download token: " + input.DownloadToken);
             }
 
-            var items = await _onlyForYouSectionRepository.GetListAsync(input.FilterText, input.FirstPhoto, input.SecondPhoto, input.ThirdPhoto);
+            var items = await _onlyForYouSectionRepository.GetListAsync(input.FilterText);
 
             var memoryStream = new MemoryStream();
             await memoryStream.SaveAsAsync(ObjectMapper.Map<List<OnlyForYouSection>, List<OnlyForYouSectionExcelDto>>(items));
@@ -109,8 +113,34 @@ namespace AhlanFeekumPro.OnlyForYouSections
         [Authorize(AhlanFeekumProPermissions.OnlyForYouSections.Delete)]
         public virtual async Task DeleteAllAsync(GetOnlyForYouSectionsInput input)
         {
-            await _onlyForYouSectionRepository.DeleteAllAsync(input.FilterText, input.FirstPhoto, input.SecondPhoto, input.ThirdPhoto);
+            await _onlyForYouSectionRepository.DeleteAllAsync(input.FilterText);
         }
+
+        [AllowAnonymous]
+        public virtual async Task<IRemoteStreamContent> GetFileAsync(GetFileInput input)
+        {
+            var downloadToken = await _downloadTokenCache.GetAsync(input.DownloadToken);
+            if (downloadToken == null || input.DownloadToken != downloadToken.Token)
+            {
+                throw new AbpAuthorizationException("Invalid download token: " + input.DownloadToken);
+            }
+
+            var fileDescriptor = await _appFileDescriptorRepository.GetAsync(input.FileId);
+            var stream = await _blobContainer.GetAsync(fileDescriptor.Id.ToString("N"));
+
+            return new RemoteStreamContent(stream, fileDescriptor.Name, fileDescriptor.MimeType);
+        }
+
+        public virtual async Task<AppFileDescriptorDto> UploadFileAsync(IRemoteStreamContent input)
+        {
+            var id = GuidGenerator.Create();
+            var fileDescriptor = await _appFileDescriptorRepository.InsertAsync(new AppFileDescriptors.AppFileDescriptor(id, input.FileName, input.ContentType));
+
+            await _blobContainer.SaveAsync(fileDescriptor.Id.ToString("N"), input.GetStream());
+
+            return ObjectMapper.Map<AppFileDescriptors.AppFileDescriptor, AppFileDescriptorDto>(fileDescriptor);
+        }
+
         public virtual async Task<AhlanFeekumPro.Shared.DownloadTokenResultDto> GetDownloadTokenAsync()
         {
             var token = Guid.NewGuid().ToString("N");

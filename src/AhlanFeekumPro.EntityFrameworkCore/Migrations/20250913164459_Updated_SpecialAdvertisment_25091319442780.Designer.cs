@@ -4,6 +4,7 @@ using AhlanFeekumPro.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace AhlanFeekumPro.Migrations
 {
     [DbContext(typeof(AhlanFeekumProDbContext))]
-    partial class AhlanFeekumProDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250913164459_Updated_SpecialAdvertisment_25091319442780")]
+    partial class Updated_SpecialAdvertisment_25091319442780
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -214,9 +217,10 @@ namespace AhlanFeekumPro.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
 
-                    b.Property<Guid>("FirstPhotoId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("FirstPhotoId");
+                    b.Property<string>("FirstPhoto")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("FirstPhoto");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -232,13 +236,15 @@ namespace AhlanFeekumPro.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("LastModifierId");
 
-                    b.Property<Guid>("SecondPhotoId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("SecondPhotoId");
+                    b.Property<string>("SecondPhoto")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("SecondPhoto");
 
-                    b.Property<Guid>("ThirdPhotoId")
-                        .HasColumnType("uniqueidentifier")
-                        .HasColumnName("ThirdPhotoId");
+                    b.Property<string>("ThirdPhoto")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ThirdPhoto");
 
                     b.HasKey("Id");
 

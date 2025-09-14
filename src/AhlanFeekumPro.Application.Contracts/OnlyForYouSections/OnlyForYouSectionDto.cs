@@ -8,9 +8,9 @@ namespace AhlanFeekumPro.OnlyForYouSections
 {
     public abstract class OnlyForYouSectionDtoBase : FullAuditedEntityDto<Guid>, IHasConcurrencyStamp
     {
-        public string FirstPhoto { get; set; } = null!;
-        public string SecondPhoto { get; set; } = null!;
-        public string ThirdPhoto { get; set; } = null!;
+        public Guid FirstPhotoId { get; set; }
+        public Guid SecondPhotoId { get; set; }
+        public Guid ThirdPhotoId { get; set; }
 
         public string ConcurrencyStamp { get; set; } = null!;
 

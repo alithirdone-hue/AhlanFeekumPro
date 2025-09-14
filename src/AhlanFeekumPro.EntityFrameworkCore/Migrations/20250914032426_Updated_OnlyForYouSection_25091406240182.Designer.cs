@@ -4,6 +4,7 @@ using AhlanFeekumPro.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace AhlanFeekumPro.Migrations
 {
     [DbContext(typeof(AhlanFeekumProDbContext))]
-    partial class AhlanFeekumProDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250914032426_Updated_OnlyForYouSection_25091406240182")]
+    partial class Updated_OnlyForYouSection_25091406240182
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

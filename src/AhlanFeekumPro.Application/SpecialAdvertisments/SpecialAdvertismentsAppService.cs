@@ -19,6 +19,7 @@ using Volo.Abp.Authorization;
 using Volo.Abp.Caching;
 using Microsoft.Extensions.Caching.Distributed;
 using AhlanFeekumPro.Shared;
+using Volo.Abp.BlobStoring;
 
 namespace AhlanFeekumPro.SpecialAdvertisments
 {
@@ -29,21 +30,24 @@ namespace AhlanFeekumPro.SpecialAdvertisments
         protected IDistributedCache<SpecialAdvertismentDownloadTokenCacheItem, string> _downloadTokenCache;
         protected ISpecialAdvertismentRepository _specialAdvertismentRepository;
         protected SpecialAdvertismentManager _specialAdvertismentManager;
+        protected IRepository<AppFileDescriptors.AppFileDescriptor, Guid> _appFileDescriptorRepository;
+        protected IBlobContainer<SpecialAdvertismentFileContainer> _blobContainer;
 
         protected IRepository<AhlanFeekumPro.SiteProperties.SiteProperty, Guid> _sitePropertyRepository;
 
-        public SpecialAdvertismentsAppServiceBase(ISpecialAdvertismentRepository specialAdvertismentRepository, SpecialAdvertismentManager specialAdvertismentManager, IDistributedCache<SpecialAdvertismentDownloadTokenCacheItem, string> downloadTokenCache, IRepository<AhlanFeekumPro.SiteProperties.SiteProperty, Guid> sitePropertyRepository)
+        public SpecialAdvertismentsAppServiceBase(ISpecialAdvertismentRepository specialAdvertismentRepository, SpecialAdvertismentManager specialAdvertismentManager, IDistributedCache<SpecialAdvertismentDownloadTokenCacheItem, string> downloadTokenCache, IRepository<AppFileDescriptors.AppFileDescriptor, Guid> appFileDescriptorRepository, IBlobContainer<SpecialAdvertismentFileContainer> blobContainer, IRepository<AhlanFeekumPro.SiteProperties.SiteProperty, Guid> sitePropertyRepository)
         {
             _downloadTokenCache = downloadTokenCache;
             _specialAdvertismentRepository = specialAdvertismentRepository;
             _specialAdvertismentManager = specialAdvertismentManager; _sitePropertyRepository = sitePropertyRepository;
-
+            _appFileDescriptorRepository = appFileDescriptorRepository;
+            _blobContainer = blobContainer;
         }
 
         public virtual async Task<PagedResultDto<SpecialAdvertismentWithNavigationPropertiesDto>> GetListAsync(GetSpecialAdvertismentsInput input)
         {
-            var totalCount = await _specialAdvertismentRepository.GetCountAsync(input.FilterText, input.Image, input.OrderMin, input.OrderMax, input.IsActive, input.SitePropertyId);
-            var items = await _specialAdvertismentRepository.GetListWithNavigationPropertiesAsync(input.FilterText, input.Image, input.OrderMin, input.OrderMax, input.IsActive, input.SitePropertyId, input.Sorting, input.MaxResultCount, input.SkipCount);
+            var totalCount = await _specialAdvertismentRepository.GetCountAsync(input.FilterText, input.OrderMin, input.OrderMax, input.IsActive, input.SitePropertyId);
+            var items = await _specialAdvertismentRepository.GetListWithNavigationPropertiesAsync(input.FilterText, input.OrderMin, input.OrderMax, input.IsActive, input.SitePropertyId, input.Sorting, input.MaxResultCount, input.SkipCount);
 
             return new PagedResultDto<SpecialAdvertismentWithNavigationPropertiesDto>
             {
@@ -94,7 +98,7 @@ namespace AhlanFeekumPro.SpecialAdvertisments
             }
 
             var specialAdvertisment = await _specialAdvertismentManager.CreateAsync(
-            input.SitePropertyId, input.Image, input.Order, input.IsActive
+            input.SitePropertyId, input.ImageId, input.Order, input.IsActive
             );
 
             return ObjectMapper.Map<SpecialAdvertisment, SpecialAdvertismentDto>(specialAdvertisment);
@@ -110,7 +114,7 @@ namespace AhlanFeekumPro.SpecialAdvertisments
 
             var specialAdvertisment = await _specialAdvertismentManager.UpdateAsync(
             id,
-            input.SitePropertyId, input.Image, input.Order, input.IsActive, input.ConcurrencyStamp
+            input.SitePropertyId, input.ImageId, input.Order, input.IsActive, input.ConcurrencyStamp
             );
 
             return ObjectMapper.Map<SpecialAdvertisment, SpecialAdvertismentDto>(specialAdvertisment);
@@ -125,10 +129,10 @@ namespace AhlanFeekumPro.SpecialAdvertisments
                 throw new AbpAuthorizationException("Invalid download token: " + input.DownloadToken);
             }
 
-            var specialAdvertisments = await _specialAdvertismentRepository.GetListWithNavigationPropertiesAsync(input.FilterText, input.Image, input.OrderMin, input.OrderMax, input.IsActive, input.SitePropertyId);
+            var specialAdvertisments = await _specialAdvertismentRepository.GetListWithNavigationPropertiesAsync(input.FilterText, input.OrderMin, input.OrderMax, input.IsActive, input.SitePropertyId);
             var items = specialAdvertisments.Select(item => new
             {
-                Image = item.SpecialAdvertisment.Image,
+                ImageId = item.SpecialAdvertisment.ImageId,
                 Order = item.SpecialAdvertisment.Order,
                 IsActive = item.SpecialAdvertisment.IsActive,
 
@@ -152,8 +156,34 @@ namespace AhlanFeekumPro.SpecialAdvertisments
         [Authorize(AhlanFeekumProPermissions.SpecialAdvertisments.Delete)]
         public virtual async Task DeleteAllAsync(GetSpecialAdvertismentsInput input)
         {
-            await _specialAdvertismentRepository.DeleteAllAsync(input.FilterText, input.Image, input.OrderMin, input.OrderMax, input.IsActive, input.SitePropertyId);
+            await _specialAdvertismentRepository.DeleteAllAsync(input.FilterText, input.OrderMin, input.OrderMax, input.IsActive, input.SitePropertyId);
         }
+
+        [AllowAnonymous]
+        public virtual async Task<IRemoteStreamContent> GetFileAsync(GetFileInput input)
+        {
+            var downloadToken = await _downloadTokenCache.GetAsync(input.DownloadToken);
+            if (downloadToken == null || input.DownloadToken != downloadToken.Token)
+            {
+                throw new AbpAuthorizationException("Invalid download token: " + input.DownloadToken);
+            }
+
+            var fileDescriptor = await _appFileDescriptorRepository.GetAsync(input.FileId);
+            var stream = await _blobContainer.GetAsync(fileDescriptor.Id.ToString("N"));
+
+            return new RemoteStreamContent(stream, fileDescriptor.Name, fileDescriptor.MimeType);
+        }
+
+        public virtual async Task<AppFileDescriptorDto> UploadFileAsync(IRemoteStreamContent input)
+        {
+            var id = GuidGenerator.Create();
+            var fileDescriptor = await _appFileDescriptorRepository.InsertAsync(new AppFileDescriptors.AppFileDescriptor(id, input.FileName, input.ContentType));
+
+            await _blobContainer.SaveAsync(fileDescriptor.Id.ToString("N"), input.GetStream());
+
+            return ObjectMapper.Map<AppFileDescriptors.AppFileDescriptor, AppFileDescriptorDto>(fileDescriptor);
+        }
+
         public virtual async Task<AhlanFeekumPro.Shared.DownloadTokenResultDto> GetDownloadTokenAsync()
         {
             var token = Guid.NewGuid().ToString("N");

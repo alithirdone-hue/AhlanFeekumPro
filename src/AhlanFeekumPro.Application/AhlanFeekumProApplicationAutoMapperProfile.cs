@@ -81,5 +81,7 @@ public class AhlanFeekumProApplicationAutoMapperProfile : Profile
         CreateMap<PropertyCalendar, PropertyCalendarDto>();
         CreateMap<PropertyCalendar, PropertyCalendarExcelDto>();
         CreateMap<PropertyCalendarWithNavigationProperties, PropertyCalendarWithNavigationPropertiesDto>();
+
+        CreateMap<AppFileDescriptors.AppFileDescriptor, AppFileDescriptorDto>();
     }
 }

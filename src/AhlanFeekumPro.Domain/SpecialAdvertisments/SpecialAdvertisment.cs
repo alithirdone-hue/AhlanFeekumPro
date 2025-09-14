@@ -14,8 +14,7 @@ namespace AhlanFeekumPro.SpecialAdvertisments
 {
     public abstract class SpecialAdvertismentBase : FullAuditedAggregateRoot<Guid>
     {
-        [NotNull]
-        public virtual string Image { get; set; }
+        public virtual Guid ImageId { get; set; }
 
         public virtual int Order { get; set; }
 
@@ -27,12 +26,11 @@ namespace AhlanFeekumPro.SpecialAdvertisments
 
         }
 
-        public SpecialAdvertismentBase(Guid id, Guid sitePropertyId, string image, int order, bool isActive)
+        public SpecialAdvertismentBase(Guid id, Guid sitePropertyId, Guid imageId, int order, bool isActive)
         {
 
             Id = id;
-            Check.NotNull(image, nameof(image));
-            Image = image;
+            ImageId = imageId;
             Order = order;
             IsActive = isActive;
             SitePropertyId = sitePropertyId;

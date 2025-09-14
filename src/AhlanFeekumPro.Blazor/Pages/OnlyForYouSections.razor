@@ -61,40 +61,7 @@
                 </div>
             </div>
                 
-                   <div class="col-md-4 col-lg-2">
-            <div class="mb-3">
-               <Button Color="Color.Primary" Outline Style="width:100%" id="AdvancedFilterSectionToggler"
-                         Clicked="@(() => ShowAdvancedFilters = !ShowAdvancedFilters)">@L["Filters"]
-                         <i aria-hidden="true" class="fa ms-1 @(!ShowAdvancedFilters ? "fa-angle-down" : "fa-angle-up")"></i>
-               </Button>
-            </div>
-       </div>
-        
-        <div style="display: @(!ShowAdvancedFilters ? "none" : "block")"  class="mt-3">
-            <Row>
-                <Column ColumnSize="ColumnSize.Is3">
-                    <Field>
-                        <FieldLabel>@L["FirstPhoto"]</FieldLabel>
-                        <TextEdit Text="@Filter.FirstPhoto" TextChanged="@OnFirstPhotoChangedAsync" />                       
-                    </Field>
-                </Column>
-                <Column ColumnSize="ColumnSize.Is3">
-                    <Field>
-                        <FieldLabel>@L["SecondPhoto"]</FieldLabel>
-                        <TextEdit Text="@Filter.SecondPhoto" TextChanged="@OnSecondPhotoChangedAsync" />                       
-                    </Field>
-                </Column>
-                <Column ColumnSize="ColumnSize.Is3">
-                    <Field>
-                        <FieldLabel>@L["ThirdPhoto"]</FieldLabel>
-                        <TextEdit Text="@Filter.ThirdPhoto" TextChanged="@OnThirdPhotoChangedAsync" />                       
-                    </Field>
-                </Column>
-            </Row>
-@*//<suite-custom-code-block-2>*@
-@*//</suite-custom-code-block-2>*@
-        </div>
-
+            
         </Row>
 
 @*//<suite-custom-code-block-3>*@
@@ -205,18 +172,48 @@
                 </DataGridEntityActionsColumn>
                
               <DataGridColumn TItem="OnlyForYouSectionDto"
-                      Field="FirstPhoto"
+                      Field="FirstPhotoId"
                       Caption="@L["FirstPhoto"]">
+                      <DisplayTemplate>
+                        @if (context.FirstPhotoId != null && context.FirstPhotoId != Guid.Empty)
+                        {   
+                            <Icon Name="IconName.FileAlt" Clicked="async () => await DownloadFileAsync(context.FirstPhotoId)" />
+                        }
+                        else
+                        {
+                            <span>"-"</span>
+                        }
+                      </DisplayTemplate>
               </DataGridColumn>
 
               <DataGridColumn TItem="OnlyForYouSectionDto"
-                      Field="SecondPhoto"
+                      Field="SecondPhotoId"
                       Caption="@L["SecondPhoto"]">
+                      <DisplayTemplate>
+                        @if (context.SecondPhotoId != null && context.SecondPhotoId != Guid.Empty)
+                        {   
+                            <Icon Name="IconName.FileAlt" Clicked="async () => await DownloadFileAsync(context.SecondPhotoId)" />
+                        }
+                        else
+                        {
+                            <span>"-"</span>
+                        }
+                      </DisplayTemplate>
               </DataGridColumn>
 
               <DataGridColumn TItem="OnlyForYouSectionDto"
-                      Field="ThirdPhoto"
+                      Field="ThirdPhotoId"
                       Caption="@L["ThirdPhoto"]">
+                      <DisplayTemplate>
+                        @if (context.ThirdPhotoId != null && context.ThirdPhotoId != Guid.Empty)
+                        {   
+                            <Icon Name="IconName.FileAlt" Clicked="async () => await DownloadFileAsync(context.ThirdPhotoId)" />
+                        }
+                        else
+                        {
+                            <span>"-"</span>
+                        }
+                      </DisplayTemplate>
               </DataGridColumn>
 
             </DataGridColumns>
@@ -243,40 +240,37 @@
                             ValidateOnLoad="false">
                     
                     
-                    <Validation MessageLocalizer="@LH.Localize">
                         <Field>
                             <FieldLabel>@L["FirstPhoto"] *</FieldLabel>
-                            <TextEdit @bind-Text="@NewOnlyForYouSection.FirstPhoto"  >
-                                <Feedback>
-                                    <ValidationError />
-                                </Feedback>
-                            </TextEdit>
+                            <InputFile class="form-control file-input" OnChange="@OnNewOnlyForYouSectionFirstPhotoChanged" required/>
+                            @if (OnNewOnlyForYouSectionFirstPhotoLoading)
+                            {
+                                <p>@L["FileUploading"]</p>
+                            }
+                            <p class="text-muted pt-1"><i class="fa fa-info-circle"></i> @L["MaxFileSizeLimit", 10]</p>
                         </Field>
-                    </Validation>
 
 
-                    <Validation MessageLocalizer="@LH.Localize">
                         <Field>
                             <FieldLabel>@L["SecondPhoto"] *</FieldLabel>
-                            <TextEdit @bind-Text="@NewOnlyForYouSection.SecondPhoto"  >
-                                <Feedback>
-                                    <ValidationError />
-                                </Feedback>
-                            </TextEdit>
+                            <InputFile class="form-control file-input" OnChange="@OnNewOnlyForYouSectionSecondPhotoChanged" required/>
+                            @if (OnNewOnlyForYouSectionSecondPhotoLoading)
+                            {
+                                <p>@L["FileUploading"]</p>
+                            }
+                            <p class="text-muted pt-1"><i class="fa fa-info-circle"></i> @L["MaxFileSizeLimit", 10]</p>
                         </Field>
-                    </Validation>
 
 
-                    <Validation MessageLocalizer="@LH.Localize">
                         <Field>
                             <FieldLabel>@L["ThirdPhoto"] *</FieldLabel>
-                            <TextEdit @bind-Text="@NewOnlyForYouSection.ThirdPhoto"  >
-                                <Feedback>
-                                    <ValidationError />
-                                </Feedback>
-                            </TextEdit>
+                            <InputFile class="form-control file-input" OnChange="@OnNewOnlyForYouSectionThirdPhotoChanged" required/>
+                            @if (OnNewOnlyForYouSectionThirdPhotoLoading)
+                            {
+                                <p>@L["FileUploading"]</p>
+                            }
+                            <p class="text-muted pt-1"><i class="fa fa-info-circle"></i> @L["MaxFileSizeLimit", 10]</p>
                         </Field>
-                    </Validation>
 
 
                     
@@ -288,7 +282,7 @@
                         Clicked="CloseCreateOnlyForYouSectionModalAsync">
                     @L["Cancel"]
                 </Button>
-                <SubmitButton Form="CreateOnlyForYouSectionForm" Clicked="CreateOnlyForYouSectionAsync"/>
+                <SubmitButton Form="CreateOnlyForYouSectionForm" Clicked="CreateOnlyForYouSectionAsync" Disabled="@IsCreateFormDisabled()"/>
 @*//<suite-custom-code-block-6>*@
 @*//</suite-custom-code-block-6>*@
             </ModalFooter>
@@ -315,41 +309,77 @@
                             ValidateOnLoad="false">
                     
                     
-                    <Validation MessageLocalizer="@LH.Localize">
-                        <Field>
-                            <FieldLabel>@L["FirstPhoto"] *</FieldLabel>
-                            <TextEdit @bind-Text="@EditingOnlyForYouSection.FirstPhoto"  >
-                                <Feedback>
-                                    <ValidationError />
-                                </Feedback>
-                            </TextEdit>
-                        </Field>
-                    </Validation>
+                    <Field>
+                        <FieldLabel>@L["FirstPhoto"] *</FieldLabel>
+                        @if (HasSelectedOnlyForYouSectionFirstPhoto)
+                        {
+                            <div class="mb-2">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="@L["DownloadSelectedFile"].Value" @onclick="@(async () => await DownloadFileAsync(EditingOnlyForYouSection.FirstPhotoId))"><i class="fa fa-file-alt"></i></button>
+                                    <button type="button" class="btn btn-primary btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="@L["RemoveSelectedFile"].Value" @onclick="(() => { EditingOnlyForYouSection.FirstPhotoId = Guid.Empty; HasSelectedOnlyForYouSectionFirstPhoto = false; })"><i class="fa fa-trash"></i></button>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <Field>
+                                <InputFile class="form-control file-input" OnChange="@OnEditOnlyForYouSectionFirstPhotoChanged" required/>
+                                @if (OnEditOnlyForYouSectionFirstPhotoLoading)
+                                {
+                                    <p>@L["FileUploading"]</p>
+                                }
+                                <p class="text-muted pt-1"><i class="fa fa-info-circle"></i> @L["MaxFileSizeLimit", 10]</p>
+                            </Field>
+                        }
+                    </Field>
 
+                    <Field>
+                        <FieldLabel>@L["SecondPhoto"] *</FieldLabel>
+                        @if (HasSelectedOnlyForYouSectionSecondPhoto)
+                        {
+                            <div class="mb-2">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="@L["DownloadSelectedFile"].Value" @onclick="@(async () => await DownloadFileAsync(EditingOnlyForYouSection.SecondPhotoId))"><i class="fa fa-file-alt"></i></button>
+                                    <button type="button" class="btn btn-primary btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="@L["RemoveSelectedFile"].Value" @onclick="(() => { EditingOnlyForYouSection.SecondPhotoId = Guid.Empty; HasSelectedOnlyForYouSectionSecondPhoto = false; })"><i class="fa fa-trash"></i></button>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <Field>
+                                <InputFile class="form-control file-input" OnChange="@OnEditOnlyForYouSectionSecondPhotoChanged" required/>
+                                @if (OnEditOnlyForYouSectionSecondPhotoLoading)
+                                {
+                                    <p>@L["FileUploading"]</p>
+                                }
+                                <p class="text-muted pt-1"><i class="fa fa-info-circle"></i> @L["MaxFileSizeLimit", 10]</p>
+                            </Field>
+                        }
+                    </Field>
 
-                    <Validation MessageLocalizer="@LH.Localize">
-                        <Field>
-                            <FieldLabel>@L["SecondPhoto"] *</FieldLabel>
-                            <TextEdit @bind-Text="@EditingOnlyForYouSection.SecondPhoto"  >
-                                <Feedback>
-                                    <ValidationError />
-                                </Feedback>
-                            </TextEdit>
-                        </Field>
-                    </Validation>
-
-
-                    <Validation MessageLocalizer="@LH.Localize">
-                        <Field>
-                            <FieldLabel>@L["ThirdPhoto"] *</FieldLabel>
-                            <TextEdit @bind-Text="@EditingOnlyForYouSection.ThirdPhoto"  >
-                                <Feedback>
-                                    <ValidationError />
-                                </Feedback>
-                            </TextEdit>
-                        </Field>
-                    </Validation>
-
+                    <Field>
+                        <FieldLabel>@L["ThirdPhoto"] *</FieldLabel>
+                        @if (HasSelectedOnlyForYouSectionThirdPhoto)
+                        {
+                            <div class="mb-2">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="tooltip" data-bs-placement="top" title="@L["DownloadSelectedFile"].Value" @onclick="@(async () => await DownloadFileAsync(EditingOnlyForYouSection.ThirdPhotoId))"><i class="fa fa-file-alt"></i></button>
+                                    <button type="button" class="btn btn-primary btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="@L["RemoveSelectedFile"].Value" @onclick="(() => { EditingOnlyForYouSection.ThirdPhotoId = Guid.Empty; HasSelectedOnlyForYouSectionThirdPhoto = false; })"><i class="fa fa-trash"></i></button>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <Field>
+                                <InputFile class="form-control file-input" OnChange="@OnEditOnlyForYouSectionThirdPhotoChanged" required/>
+                                @if (OnEditOnlyForYouSectionThirdPhotoLoading)
+                                {
+                                    <p>@L["FileUploading"]</p>
+                                }
+                                <p class="text-muted pt-1"><i class="fa fa-info-circle"></i> @L["MaxFileSizeLimit", 10]</p>
+                            </Field>
+                        }
+                    </Field>
 
                     
                     
@@ -360,7 +390,7 @@
                         Clicked="CloseEditOnlyForYouSectionModalAsync">
                     @L["Cancel"]
                 </Button>
-                <SubmitButton Form="EditOnlyForYouSectionForm" Clicked="UpdateOnlyForYouSectionAsync" />
+                <SubmitButton Form="EditOnlyForYouSectionForm" Clicked="UpdateOnlyForYouSectionAsync" Disabled="@IsEditFormDisabled()" />
 @*//<suite-custom-code-block-9>*@
 @*//</suite-custom-code-block-9>*@
             </ModalFooter>

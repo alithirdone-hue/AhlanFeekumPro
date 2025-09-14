@@ -202,6 +202,14 @@
     "MaxDate": "Max Date",
     "MaxPrice": "Max Price",
     "NewPropertyCalendar": "New Property Calendar",
-    "Menu:PropertyCalendars": "Property Calendars"
+    "Menu:PropertyCalendars": "Property Calendars",
+    "MinImage": "Min Image",
+    "MaxImage": "Max Image",
+    "MinFirstPhoto": "Min First Photo",
+    "MinSecondPhoto": "Min Second Photo",
+    "MinThirdPhoto": "Min Third Photo",
+    "MaxFirstPhoto": "Max First Photo",
+    "MaxSecondPhoto": "Max Second Photo",
+    "MaxThirdPhoto": "Max Third Photo"
   }
 }

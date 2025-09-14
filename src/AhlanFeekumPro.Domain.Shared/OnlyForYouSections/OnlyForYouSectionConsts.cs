@@ -2,7 +2,7 @@ namespace AhlanFeekumPro.OnlyForYouSections
 {
     public static class OnlyForYouSectionConsts
     {
-        private const string DefaultSorting = "{0}FirstPhoto asc";
+        private const string DefaultSorting = "{0}FirstPhotoId asc";
 
         public static string GetDefaultSorting(bool withEntityName)
         {

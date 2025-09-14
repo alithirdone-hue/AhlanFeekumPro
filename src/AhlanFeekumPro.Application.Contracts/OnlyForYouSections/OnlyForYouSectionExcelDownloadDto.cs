@@ -9,10 +9,6 @@ namespace AhlanFeekumPro.OnlyForYouSections
 
         public string? FilterText { get; set; }
 
-        public string? FirstPhoto { get; set; }
-        public string? SecondPhoto { get; set; }
-        public string? ThirdPhoto { get; set; }
-
         public OnlyForYouSectionExcelDownloadDtoBase()
         {
 
